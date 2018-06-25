@@ -1,0 +1,422 @@
+
+    <div id = "page-wrapper">
+      <div class="control-group employeeAll">
+      <!-- Button -->
+      <div class="controls">
+        <a onclick="goNewEmployee()" class="btn btn-danger" role="button">New Employee</a>
+        <!-- <button class="btn" href="EmployeeForm.html"><strong>+New Employee</strong></button> -->
+      </div>
+    </div>
+        <div class="col-md-10">
+          <div class="table-responsive">
+            <h1 id="mainTitle"> All Active Employees</h1>
+                <button id="remove" class="btn btn-danger" disabled>Delete</button>
+                <table id="mytableCheck" class="table table-bordred table-striped"></table>    
+          </div>  
+        </div>
+
+
+        <!-- Edit Employee -->
+            <div class="modal fade" id="myModal" role="dialog">
+                <div class="modal-dialog">
+                
+                  <!-- Modal content-->
+                  <div class="modal-content">
+                    <div class="modal-body">
+                      
+
+
+
+
+                      <form class="form-horizontal" action='' method="POST">
+                        <fieldset>
+                          <div id="legend">
+                            <legend class="">Edit Employee</legend>
+                          </div>
+                          <div class="control-group">
+                            <label class="control-label"  for="FN">First Name</label>
+                            <div class="controls">
+                              <input id="employeeFirstName" type="text" placeholder="First Name" class="input-xlarge">
+                            </div>
+                          </div>
+                           <div class="control-group">
+                            <label class="control-label"  for="LN">Last Name</label>
+                            <div class="controls">
+                              <input id="employeeLastName" type="text" placeholder="Last Name" class="input-xlarge">
+                            </div>
+                          </div>
+                       
+                          <div class="control-group">
+                            <!-- E-mail -->
+                            <label class="control-label" for="email">E-mail</label>
+                            <div class="controls">
+                              <input id="employeeEmail" type="text" placeholder="Email" class="input-xlarge">
+                            </div>
+                          </div>
+                       
+                           <div class="control-group">
+                            <!-- AndrewID -->
+                            <label class="control-label" for="andrewId">AndrewID</label>
+                            <div class="controls">
+                              <input id="employeeAndrewId" type="text" placeholder="AndrewID" class="input-xlarge">
+                            </div>
+                          </div>
+
+                          <div class="control-group">                      
+                            <select id="employeeContractType" placeholder="Select Contract Type">
+                              <option>Select Cotract Type</option>
+                              <option>Short Term</option>
+                              <option>Long Term</option>
+                              <option>Long Term Extended</option>
+                            </select>
+                          </div>
+                          
+                       <br>
+                          <div class="control-group">
+                            <!-- Button -->
+                            <div>
+                              <a href="#" class="btn btn-primary btn-md" onclick = "updateEmployee()" data-dismiss="modal">Update</a>
+                            </div>
+                          </div>
+                        </fieldset>
+                      </form>
+
+
+
+
+
+
+                    </div>
+                    <div class="modal-footer">
+                      <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+                    </div>
+                  </div>
+                  
+                </div>
+              </div>
+
+
+
+
+           <div class="col-md-10">
+          <div class="table-responsive">
+            <h1 id="mainTitle"> All Inactive Employees</h1>
+                <button id="removeInActive" class="btn btn-danger" disabled>Delete</button>
+                <table id="mytableCheckInActive" class="table table-bordred table-striped"></table>    
+          </div>  
+        </div>
+    </div>
+
+
+
+<script type="text/javascript">
+
+
+        require('../renderer.js');
+
+        var $     = require( 'jquery' ); 
+        var mysql = require('mysql');
+        // var bcrypt = require('bcrypt');
+
+
+        var connection = mysql.createConnection({
+            host     : 'mysql.qatar.cmu.local',
+            user     : 'fmbills_devuser',
+            password : 'PatUmNed', // or the original password : 'apaswword'
+            database : 'fmbills_dev',
+            insecureAuth: true
+        });
+
+        // connect to mysql
+        connection.connect(function(err) {
+            // in case of error
+            if(err){
+                console.log(err.code);
+                console.log(err.fatal);
+            }
+        });
+
+
+
+
+        // var app = angular.module('myApp', []);
+
+
+        function endConnection() {
+          connection.end();
+        }
+
+
+        $query = "SELECT `employee`.`andrewId`, `employee`.`firstName`, `employee`.`lastName`, `employee`.`email`  FROM `employee` LEFT JOIN `assignment` on `employee`.`andrewId` = `assignment`.`andrewId` WHERE `assignment`.`andrewId` is not null ;";
+
+        connection.query($query, function(err, rows, fields) {
+          if(err){
+              console.log("An error ocurred performing the query.");
+              console.log(err);
+              return; 
+          }
+          console.log(rows)
+          $('#mytableCheck').bootstrapTable({
+              data: rows ,
+              height: 532,
+              cache: false,
+              striped: true,
+              pagination: true,
+              pageSize: 10,
+              pageList: [10,25,50,100,200],
+              minimumCountColumns: 2,
+              search: true,
+              showRefresh:true,
+              checkboxEnable: true,
+              columns: [{
+                field: 'state',
+                title: '',
+                align: 'center',
+                checkbox: true
+              }, {
+                  field: 'firstName',
+                  title: 'First Name',
+                  sortable: true,
+              }, {
+                  field: 'lastName',
+                  title: 'Last Name',
+                  sortable: true
+              }, {
+                  field: 'email',
+                  title: 'Email Address',
+                  sortable: true
+              }, {
+                  field: 'andrewId',
+                  title: 'AndrewID',
+                  sortable: true
+              }, {
+                  field: 'operate',
+                  title: 'Edit',
+                  align: 'center',
+                  events: operateEvents,
+                  formatter: operateFormatter
+              }, ]
+          });
+        });
+
+        var $table = $('#mytableCheck'),
+            $remove = $('#remove');
+
+        $table.on('check.bs.table uncheck.bs.table check-all.bs.table uncheck-all.bs.table', function () {
+            $remove.prop('disabled', !$table.bootstrapTable('getSelections').length);
+        });
+
+
+        // $table.on('refresh.bs.table', function (){
+        //     connection.query($query, function(err, rows, fields) {
+        //       if(err){
+        //           console.log("An error ocurred performing the query.");
+        //           console.log(err);
+        //           return; 
+        //       }
+        //       $table.bootstrapTable('load', rows)
+        //     })
+        // })
+
+        $remove.click(function () {
+            var ids = $.map($table.bootstrapTable('getSelections'), function (row) {
+                return row.andrewId
+            });
+
+            $table.bootstrapTable('remove', {
+                field: 'andrewId',
+                values: ids
+            });
+
+
+            $remove.prop('disabled', true);
+        });
+
+///    EDIT EMPLOYEE FUNCTIONS
+        function operateFormatter(value, row, index) {
+            return [
+                '<a class="edit" href="javascript:void(0)" title="Edit">',
+                '<i class="glyphicon glyphicon-edit"  data-toggle="modal" data-target="#myModal" ></i>',
+                '</a>  '
+            ].join('');
+        }
+
+        window.operateEvents = {
+            'click .edit': function (e, value, row, index) {
+              $("#employeeFirstName").val(row.firstName)
+              $("#employeeLastName").val(row.lastName)
+              $("#employeeEmail").val(row.email)
+              $("#employeeAndrewId").val(row.andrewId)
+            }
+        };
+
+
+
+        function updateEmployee(){
+
+
+
+          var email = document.getElementById("employeeEmail").value
+          var first = document.getElementById("employeeFirstName").value
+          var last = document.getElementById("employeeLastName").value
+          var andrewId = document.getElementById("employeeAndrewId").value
+          var contractType = document.getElementById("employeeContractType").value
+
+
+          if(first == null || first == ""){
+              alert("First name is required!!", "Bill Management System");
+              return;
+          }
+
+          if(last == null || last == ""){
+              alert("Last name is required!!", "Bill Management System");
+              return;
+          }
+
+          if(andrewId == null || andrewId == ""){
+              alert("Andrew ID is required!!", "Bill Management System");
+              return;
+          }
+
+          if(contractType == null || contractType == "" || contractType == "Select Cotract Type"){
+              alert("Contract Type is required", "Bill Management System");
+              return;
+          }
+
+          if(email == null || email == ""){
+              alert("email is required", "Bill Management System");
+              return;
+          }
+
+          var re = /^(([^<>()\[\]\.,;:\s@\"]+(\.[^<>()\[\]\.,;:\s@\"]+)*)|(\".+\"))@(([^<>()[\]\.,;:\s@\"]+\.)+[^<>()[\]\.,;:\s@\"]{2,})$/i;
+          
+          if (!re.test(email)){
+              alert(email + " is not a valid email address", "Bill Management System");
+              return;
+          }
+
+          var email_splitted = email.split("@");
+
+          email_splitted = email_splitted[0];
+
+          if (email_splitted != andrewId){
+
+              var dialog = remote.getGlobal('dialog');
+              var choice = dialog.showMessageBox(
+                  remote.getCurrentWindow(),
+                  {
+                      type: 'question',
+                      buttons: ['Yes', 'No'],
+                      title: 'Bill Management System. Confirm: ',
+                      message: 'Andrew ID is not the same as email.\nAre you sure you want to continue?'
+                  });
+
+              if (choice == 1) return;
+          }
+
+
+          $query = "UPDATE `employee` SET `email` = '"+  email  +"', firstName = '"+  first  +"', lastName = '"+  last  +"', `andrewId` = '"+ andrewId + "', `contractType` = '"+ contractType +"' WHERE `andrewId` = '"+  andrewId  +"';";
+
+          connection.query($query, function(err, rows, fields) {
+              if(err){
+                  console.log("An error ocurred performing the query.");
+                  console.log(err);
+                  return;
+              } 
+              alert("Employee Succesfully Updated!")
+              $('#myModal').hide()
+              goEmployeeMain();
+          });
+        };
+
+
+
+
+
+
+
+
+
+
+        /////// Inactive Employees
+
+
+
+        $query = "SELECT `employee`.`andrewId`, `employee`.`firstName`, `employee`.`lastName`, `employee`.`email`  FROM `employee` LEFT JOIN `assignment` on `employee`.`andrewId` = `assignment`.`andrewId` WHERE `assignment`.`andrewId` is null;";
+
+        connection.query($query, function(err, rows, fields) {
+          if(err){
+              console.log("An error ocurred performing the query.");
+              console.log(err);
+              return; 
+          }
+          console.log(rows)
+          $('#mytableCheckInActive').bootstrapTable({
+              data: rows ,
+              height: 532,
+              cache: false,
+              striped: true,
+              pagination: true,
+              pageSize: 10,
+              pageList: [10,25,50,100,200],
+              minimumCountColumns: 2,
+              search: true,
+              showRefresh:true,
+              checkboxEnable: true,
+              columns: [{
+                field: 'state',
+                title: '',
+                align: 'center',
+                checkbox: true
+              }, {
+                  field: 'firstName',
+                  title: 'First Name',
+                  sortable: true,
+              }, {
+                  field: 'lastName',
+                  title: 'Last Name',
+                  sortable: true
+              }, {
+                  field: 'email',
+                  title: 'Email Address',
+                  sortable: true
+              }, {
+                  field: 'andrewId',
+                  title: 'AndrewID',
+                  sortable: true
+              }, {
+                  field: 'operate',
+                  title: 'Edit',
+                  align: 'center',
+                  events: operateEvents,
+                  formatter: operateFormatter
+              }, ]
+          });
+        });
+
+        var $table2 = $('#mytableCheckInActive'),
+            $remove2 = $('#removeInActive');
+
+        $table2.on('check.bs.table uncheck.bs.table check-all.bs.table uncheck-all.bs.table', function () {
+            $remove2.prop('disabled', !$table2.bootstrapTable('getSelections').length);
+        });
+
+        $remove2.click(function () {
+            var ids = $.map($table2.bootstrapTable('getSelections'), function (row) {
+                return row.andrewId
+            });
+
+            $table2.bootstrapTable('remove', {
+                field: 'andrewId',
+                values: ids
+            });
+
+
+            $remove2.prop('disabled', true);
+        });
+
+select * from `houses`,`employee` 
+
+
+
+</script>

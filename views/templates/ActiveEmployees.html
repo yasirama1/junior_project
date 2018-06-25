@@ -1,0 +1,115 @@
+    <div id = "page-wrapper">
+      <div class="control-group employeeAll">
+      <!-- Button -->
+
+    </div>
+    <div class="col-md-17">
+      <div class="plan">
+          <div class="plan-name">
+            <center>
+            <h2>All Active Employees</h2>
+            </center>
+          </div>
+          <div class="table-responsive" style="color: #990000;">
+                <table id="activeEmployeeTable" class="table table-bordred table-striped"></table>    
+          </div>  
+        </div>
+        </div>
+
+
+
+
+
+
+
+
+
+<script type="text/javascript">
+
+
+        require('../renderer.js');
+
+        var $     = require( 'jquery' ); 
+        var mysql = require('mysql');
+        // var bcrypt = require('bcrypt');
+
+
+        var connection = mysql.createConnection({
+            host     : 'mysql.qatar.cmu.local',
+            user     : 'fmbills_user',
+            password : 'F@mB11lsU$er', // or the original password : 'apaswword'
+            database : 'fmbills',
+            insecureAuth: true
+        });
+
+        // connect to mysql
+        connection.connect(function(err) {
+            // in case of error
+            if(err){
+                console.log(err.code);
+                console.log(err.fatal);
+            }
+        });
+
+
+
+
+        // var app = angular.module('myApp', []);
+
+
+        function endConnection() {
+          connection.end();
+        }
+
+       $query = "SELECT `employee`.`andrewId`, `employee`.`firstName`, `employee`.`lastName`, `employee`.`email` , `employee`.`contractType`, `assignment`.`landLine` FROM `employee` LEFT JOIN `assignment` on `employee`.`andrewId` = `assignment`.`andrewId` WHERE `assignment`.`andrewId` is not null AND (DATEDIFF(`assignment`.`endDate`,CURDATE()) > 0 OR `assignment`.`endDate` = '0000-00-00') ;";
+
+
+ ///
+        connection.query($query, function(err, rows, fields) {
+          if(err){
+              console.log("An error ocurred performing the query.");
+              console.log(err);
+              return; 
+          }
+          console.log(rows)
+          $('#activeEmployeeTable').bootstrapTable({
+              data: rows ,
+              height: 530,
+              cache: false,
+              striped: true,
+              pagination: true,
+              pageSize: 10,
+              pageList: [10,25,50,100,200],
+              minimumCountColumns: 2,
+              search: true,
+              checkboxEnable: true,
+              columns: [ {
+                  field: 'firstName',
+                  title: 'First Name',
+                  sortable: true,
+              }, {
+                  field: 'lastName',
+                  title: 'Last Name',
+                  sortable: true
+              }, {
+                  field: 'email',
+                  title: 'Email Address',
+                  sortable: true
+              }, {
+                  field: 'andrewId',
+                  title: 'AndrewID',
+                  sortable: true
+              }, 
+               {
+                  field: 'contractType',
+                  title: 'Contract Type',
+                  sortable: true,
+              },{
+                  field: 'landLine',
+                  title: 'Landline',
+                  sortable: true,
+              }, ]
+          });
+        });
+
+</script>

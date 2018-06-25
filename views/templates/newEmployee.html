@@ -1,0 +1,71 @@
+    <div class="navigation"></div>
+    <div id = "page-wrapper">
+      <form class="form-horizontal" action='' method="POST">
+  <fieldset>
+    <div id="legend">
+      <legend class="">Employee</legend>
+    </div>
+    <div class="control-group">
+      <label class="control-label"  for="FN">First Name</label>
+      <div class="controls">
+        <input id="employeeFirstName" type="text" placeholder="First Name" class="input-xlarge">
+      </div>
+    </div>
+     <div class="control-group">
+      <label class="control-label"  for="LN">Last Name</label>
+      <div class="controls">
+        <input id="employeeLastName" type="text" placeholder="Last Name" class="input-xlarge">
+      </div>
+    </div>
+ 
+    <div class="control-group">
+      <!-- E-mail -->
+      <label class="control-label" for="email">E-mail</label>
+      <div class="controls">
+        <input id="employeeEmail" type="text" placeholder="Email" class="input-xlarge">
+      </div>
+    </div>
+ 
+     <div class="control-group">
+      <!-- AndrewID -->
+      <label class="control-label" for="andrewId">AndrewID</label>
+      <div class="controls">
+        <input id="employeeAndrewId" type="text" placeholder="AndrewID" class="input-xlarge">
+      </div>
+    </div>
+
+     <div class="control-group">
+      <!-- AndrewID -->
+      <label class="control-label" for="andrewId">Contract Type</label>
+      <div class="controls">
+
+        <select id="employeeContractType" placeholder="Select Contract Type">
+          <option>Select Cotract Type</option>
+          <option>Short Term</option>
+          <option>Long Term</option>
+          <option>Long Term Extended</option>
+        </select>
+      </div>
+    </div>
+    <br>
+ 
+    <div class="control-group">
+      <!-- Button -->
+      <div>
+        <a href="#" class="btn btn-primary btn-md" onclick = "addEmployee()" >Add</a>
+      </div>
+    </div>
+  </fieldset>
+</form>
+
+</table>
+
+
+      </fieldset>
+
+    </div>
+
+
+
+
+  <script src="/renderer.js">  </script>

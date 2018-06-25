@@ -1,0 +1,534 @@
+
+<div class="panel panel-danger">
+  <div class="panel-heading"><strong>Synchronized Bills</strong>
+  </div>
+
+  <div class="panel-body"><!-- 
+  <div class="loader" style = "border-left: 60px;"></div> -->
+    Press generate if all the bills are ready to be uploaded to the system.
+    <br><strong>Last time populated: <span id = "populatedBills" style="color:red;"></span></strong>
+    <button type="button" class="btn btn-danger" id="filepicker">Populate</button><br>
+    <br>
+    Number of Bills successfully read: <strong><span id = "showRead"></span></strong><br>
+    Number of Bills not read: <strong><span id = "showNotRead"></span></strong>
+    
+  </div>
+</div>
+<div class="panel panel-danger">
+  <div class="panel-heading"><strong>Emails Sent</strong></div>
+  <div class="panel-body">Press the send button to send each bill to each employee.<br>
+    <strong>Last time sent: <span id = "sentMailTime" style="color:red;"></span></strong>
+    <button type="button" class="btn btn-danger" id="sendMails" >Send</button><br>
+    <br>
+    Total bills successfully sent: <strong><span id = "showSent"></span></strong><br>
+    Total bills not sent: <strong><span id = "showNotSent"></span></strong>
+  </div>
+</div>
+
+<script>
+
+
+// require('../renderer.js');
+
+$('.loader').hide()
+
+var $     = require( 'jquery' ); 
+var mysql = require('mysql');
+
+var connection = mysql.createConnection({
+            host     : 'mysql.qatar.cmu.local',
+            user     : 'fmbills_user',
+            password : 'F@mB11lsU$er', // or the original password : 'apaswword'
+            database : 'fmbills',
+            insecureAuth: true
+});
+
+// connect to mysql
+connection.connect(function(err) {
+    // in case of error
+    if(err){
+        console.log(err.code);
+        console.log(err.fatal);
+    }
+});
+
+function addBill(billNo, pastBalance, paymentsReceived, totalAmountDue, billDate, billPeriod, deadline, pdfURL, landLine){
+    $query = "INSERT INTO `bill` VALUES ('"+ billNo + "','"+ pastBalance +"', '"+ paymentsReceived +"', '"+ totalAmountDue+"', '"+ billDate+"', '"+ billPeriod+"', '"+ deadline +"', '"+ pdfURL+"', '"+ landLine+"');";
+    
+    connection.query($query, function(err, rows, fields) {
+        if(err){
+            if (err.toString().substr(0,19) == "Error: ER_DUP_ENTRY", "Bill Management System"){
+                // alert("Bill Number " + billNo + " already exists in the database!")
+            }
+            else{
+                alert(err.toString() + "\n" + landLine, "Bill Management System");
+            }
+            // console.log("An error ocurred performing the query.");
+            // console.log(err);
+
+            return 0;
+           // remote.getCurrentWindow().reload();
+        }
+        return 1;
+    });
+
+}
+
+const {remote} = require('electron');
+
+var fs = require('fs');
+
+const path = require('path');
+
+const storage = require('electron-json-storage');
+//********************************************************** dialog box ************************************************//
+var direc;
+
+var filepicker = document.getElementById('filepicker');
+if (filepicker != null)
+filepicker.onclick = openSelection;
+
+//*********************************************************Code For dialogbox ***************************************//
+
+showPDFReadTime();
+
+
+function showPDFReadTime(){
+  storage.get('myDate', function(error, data) {
+
+        if (error) console.log(error);
+        if (data.t != null){
+          document.getElementById("populatedBills").innerHTML = data.t;
+        }
+        else{
+          document.getElementById("populatedBills").innerHTML = "---------";
+        }
+      });
+}
+function openSelection(){
+
+  var countBillAdded = 0;
+  var countBillSkipped = 0;
+  var countEnd = 0;
+
+  const dialog = remote.getGlobal('dialog');
+  var a = dialog.showOpenDialog({ properties: ['openDirectory']});
+  if (a == undefined) return;
+  direc = a[0];
+
+  
+  var d = new Date();
+  var t = d.toLocaleDateString() + " at " + d.toLocaleTimeString();
+  
+
+  storage.set('myDate', { t }, function(error) {
+      if (error) console.log(error);
+
+  });
+
+
+  //Call back to go through every file in the selected directory
+  fs.readdir(direc, (err, dir) => {
+    
+
+    for(let filePath of dir){
+      
+      var pathtopdf = direc + '/' + filePath;
+      var pathforadding = pathtopdf;
+
+      //Converts it into a proper path
+      pathtopdf = path.win32.normalize(pathtopdf);
+
+      //Calls the pdf Reading function
+      var check = readPDF(pathtopdf, pathforadding);
+
+      if (check == 0){
+        countBillSkipped += 1
+      }else{
+        countBillAdded += 1
+      }
+    
+
+      setTimeout(showPDFReadTime, 2000);
+
+      document.getElementById("showRead").innerHTML = countBillAdded;
+      document.getElementById("showNotRead").innerHTML = countBillSkipped;
+    }
+   
+  });
+  // $(".loader").hide()
+  // $("#filepicker").show()
+  
+}
+
+//Requirements 
+var pdfText = remote.getGlobal('pdfText');
+var fs = require('fs');
+
+//Function to read the pdf
+function readPDF(pathtopdf, pathforadding){
+
+  //Creates a buffer stream out of the pdf for faster performance
+  var buffer = fs.readFileSync(pathtopdf);
+
+  //callback to extract pdf data
+  pdfText(buffer, function(err, chunks) {
+    if (err){
+      console.log(err)
+      console.dir(err);
+      return 0;
+    }
+
+    //Function call to extract individual/required items 
+    return extractData(chunks, pathforadding);
+    //console.dir(chunks);
+
+  });
+}
+
+//Variable declaration 
+var bill_no, landline, past_balance, payments_rec, total_amount, bill_date, bill_period, payment_deadline, pdf_URL;
+var total_lines = 1;
+var QR_starter_position;
+
+//Individual data extraction
+function extractData(chunks, pdfPath){
+
+  var cust_no = chunks[5];
+  if (cust_no == "02666714"){
+
+    //Extract Bill number
+    bill_no = chunks[9];
+    console.log("Bill Number: ", bill_no);
+
+    //Extract Bill date
+    bill_date = chunks[11];
+    // console.log("Bill Date: ", bill_date);
+
+    //Extract Bill number
+    bill_period = chunks[13];
+    // console.log("Bill Period: ", bill_period);
+
+    //Extract PDF URL
+    pdf_URL = pdfPath
+    // console.log("PDF URL: ", pdf_URL);
+
+    //Extract Landline number
+    landline = getLandline (chunks);
+    // console.log("Landline Number: ", landline);
+
+    //Extract Past Balance
+    past_balance = getPastBalance(chunks);
+    // console.log("Past Balance: ", past_balance);
+
+    //Extract Payments Received
+    payments_rec = chunks[QR_starter_position + 5];
+    payments_rec = parseFloat(payments_rec.replace(',', ''));
+    // console.log("Payments Received: ", payments_rec);
+
+    //Extarct Total Value
+    total_amount = chunks[QR_starter_position + 18];
+    total_amount = parseFloat(total_amount.replace(',', ''));
+    // console.log("Total Amount: ", total_amount);
+
+    //Extract Date Deadline
+    payment_deadline = chunks[QR_starter_position + 22];
+    // console.log("Payment Deadline Date: ", payment_deadline);
+
+
+    // console.log("\n\n");
+
+
+    return addBill(bill_no, past_balance, payments_rec, total_amount, bill_date, bill_period, payment_deadline, pdf_URL.replace(/\\/g,"/"), landline);
+  }
+
+  else{
+    alert("Bogus bill found with this Customer Number " + cust_no + ".\nSkipped!!!");
+    return 0;
+  }
+}
+
+function getPastBalance(chunks){
+
+  var difference = total_lines + 1;
+  var start_point = 14 + difference;
+
+  while(!chunks[start_point].includes("QR")) {
+    start_point++;
+  }
+
+  QR_starter_position = start_point + 1;
+
+  var out = chunks[QR_starter_position + 2];
+
+  out = parseFloat(out.replace(',', ''));
+  return out;
+
+}
+
+function getLandline(chunks){
+  var fixed_val = 14;
+  var alter = fixed_val;
+
+    var bool = false;
+
+  while (bool == false){
+    if (chunks[alter].includes("MELLON") || chunks[alter].includes("CARNEGIE") || chunks[alter].includes("GARNEGIE") || chunks[alter].includes("CARNEGEI") || chunks[alter].includes("MELON") || chunks[alter].includes("NEGIE") || chunks[alter].includes("QATAR")|| chunks[alter].includes("CAMPUS"))
+    {
+        bool = true;
+    }
+    if (bool == false){
+        alter++;
+    }
+  }
+
+  total_lines = alter - fixed_val - 1;
+  var pointer = fixed_val + total_lines;
+
+  if (chunks[pointer].length == 8){
+    return chunks[pointer];
+  }
+
+  else if (chunks[pointer].length > 8) {
+    var val = chunks[pointer].slice((chunks[pointer].length - 8), chunks[pointer].length);
+    return val;
+  }
+
+  else if (chunks[pointer].length < 8){
+    var endVal = chunks[pointer];
+    var startVal = chunks[pointer - 1].slice((chunks[pointer - 1].length - (8 - endVal.length)), chunks[pointer - 1].length);
+    var out = startVal + endVal;
+    return out;
+  }
+}
+
+// storage.get('emailDate', function(error, data) {
+//   if (error) console.log(error);
+//   if (data.t != null){
+//     document.getElementById("sentMailTime").innerHTML = data.t;
+//   }
+//   else{
+//     document.getElementById("sentMailTime").innerHTML = "---------";
+//   }
+// });
+
+showEmailData();
+///////////// SENDING MAILS
+
+
+$("#sendMails").click(function(){
+  startSending( function(err,data){
+          if (err) {
+              // error handling code goes here
+              console.log("ERROR : ",err);            
+          } else {            
+              // code to execute on data retrieval
+
+              if (data.length == 0){
+                alert("There are no bills to be sent for this month!")
+                return;
+              }
+              emailSent = 0;
+              emailNotSent = 0;
+              listOfVacantAndST = "List of outstanding bills for short term employees and vacant landlines:\n"
+              var d = new Date();
+              var t = d.toLocaleDateString() + " at " + d.toLocaleTimeString();
+              
+
+              storage.set('emailDate', { t }, function(error) {
+                  if (error) console.log(error);
+              });
+    
+              setTimeout(showEmailData, 2000);
+              var counter = 1;
+              for (i = 0; i<data.length; i++){
+                if (data[i].contractType == 'Short Term' || data[i].empName == undefined || data[i].empName == '' ){
+                  if (data[i].empName == '' || data[i].empName == undefined){
+                    listOfVacantAndST += counter + " - " + data[i].landLine + " | Vacant | "+data[i].unitNo+", "+data[i].compName+ "\n"
+                    counter ++;
+                  }
+                  else{
+                    listOfVacantAndST += counter + " - " + data[i].landLine + " | Short Term | " + data[i].empName + " | " +data[i].unitNo + ", " + data[i].compName+ "\n"
+                    counter ++;
+                  }
+                }
+
+                else{
+                  sendMail(data[i].email, data[i].empName, data[i].landLine, data[i].compName, data[i].pdfUrl,data[i].andrewId, data[i].unitNo, "")
+                }
+
+              }
+
+              sendMail('yasirk@qatar.cmu.edu', "", "", "", "","","", listOfVacantAndST)
+
+            }
+
+  });
+});
+
+function showEmailData(){
+  storage.get('emailDate', function(error, data) {
+    
+    if (error) console.log(error);
+
+    if (data.t != null){
+      document.getElementById("sentMailTime").innerHTML = data.t;
+    }
+    else{
+      document.getElementById("sentMailTime").innerHTML = "---------";
+    }
+  });
+}
+// var sendMails = document.getElementById('sendMails');
+// sendMails.onclick = 
+
+
+function startSending(callback){
+
+  var monthNames = ["January", "February", "March", "April", "May", "June",
+    "July", "August", "September", "October", "November", "December"
+  ];
+
+  var a = new Date();
+    $query = "SELECT CONCAT_WS(' ', `employee`.`firstName`, `employee`.`lastName`) AS `empName`, `employee`.`contractType`, `employee`.`email`, `housing`.`landLine`, `housing`.`unitNo`, `employee`.`andrewId`,  `compound`.`compName`, `bill`.`pdfUrl` FROM `compound` ,`housing`, `bill` LEFT JOIN `assignment` on `assignment`.`landline` = `bill`.`landLine` AND ((date_format(str_to_date(`bill`.`billDate`, '%d %M %Y'), '%Y-%m-%d') <`assignment`.`endDate` AND (date_format(str_to_date(`bill`.`billDate`, '%d %M %Y'), '%Y-%m-%d') >= `assignment`.`startDate`)) OR (`assignment`.`endDate` = '0000-00-00' AND (date_format(str_to_date(`bill`.`billDate`, '%d %M %Y'), '%Y-%m-%d') >= `assignment`.`startDate`))) LEFT JOIN `employee` on `assignment`.`andrewId`=`employee`.`andrewId` WHERE  `bill`.`landLine` = `housing`.`landLine` AND `housing`.`compId` = `compound`.`compId`AND date_format(str_to_date(`bill`.`billDate`, '%d %M %Y'), '%M') = '" + monthNames[3] + "'  ORDER BY `employee`.`contractType`;";
+
+
+    connection.query($query, function(err, rows, fields) {
+        if(err){
+            callback(err, null)
+        }
+        else{
+          callback(null, rows)
+        }
+
+    });
+}
+
+
+
+
+
+
+
+var emailSent = 0;
+var emailNotSent = 0;
+var listOfVacantAndST = "";
+
+const nodemailer = require('nodemailer');
+var hbs = require('nodemailer-express-handlebars')
+// create reusable transporter object using the default SMTP transport
+let transporter = nodemailer.createTransport({
+    host: 'smtp.qatar.cmu.edu',
+    pool: true,
+    port: 25,
+    ignoreTLS: true,
+    secure: false, // secure:true for port 465, secure:false for port 587
+
+});
+
+
+
+transporter.use('compile',hbs({
+  viewPath: 'emailTemplates',
+  extName: '.hbs'
+}))
+
+
+
+
+function sendMail(email, empName, landLine, compName, pdfUrl, andrewId, unitNo, listOfVacantAndST){
+  // setup email data with unicode symbols
+
+  if (listOfVacantAndST == ""){
+    let mailOptions = {
+        from: '"Ooredoo Bill" <no-reply-fmbills@qatar.cmu.edu>', // sender address
+        to: email, // list of receivers
+        cc: "yasirk@qatar.cmu.edu",
+        subject: 'Ooredoo Bill Cycle', // Subject line
+        template: 'yourBill',
+        attachments: [
+        {   
+            path: pdfUrl
+        }
+        ],
+        context: {
+          empName: empName,
+          landLine: landLine,
+          compName: compName,
+          unitNo: unitNo
+        }
+      };
+
+
+
+
+    // send mail with defined transport object
+    transporter.sendMail(mailOptions, (error, info) => {
+        if (error) {
+            emailNotSent =  emailNotSent + 1;
+            document.getElementById("showNotSent").innerHTML = emailNotSent;
+            document.getElementById("showSent").innerHTML = emailSent;
+            return console.log(error);
+            
+        }
+        emailSent = emailSent + 1;
+        console.log('Message %s sent: %s', info.messageId, info.response);
+        console.log(emailNotSent);
+        console.log(emailSent);
+        document.getElementById("showNotSent").innerHTML = emailNotSent;
+        document.getElementById("showSent").innerHTML = emailSent;
+
+    });
+  }
+
+
+  else{
+
+    transporter = nodemailer.createTransport({
+        host: 'smtp.qatar.cmu.edu',
+        pool: true,
+        port: 25,
+        ignoreTLS: true,
+        secure: false, // secure:true for port 465, secure:false for port 587
+
+    });
+    var plaintext = "Hi, \n\nThis email is as regards to the monthly Ooredoo billing Cycle.  \n\n"+ listOfVacantAndST + " Sincerely,\n\nFacilities Management Team\n\n\nThis is an automated email. If you have any questions or concerns, please contact Facilities at" + "fmbills@qatar.cmu.edu."
+    let mailOptions = {
+        from: '"Ooredoo Bill" <no-reply-fmbills@qatar.cmu.edu>', // sender address
+        to: email,
+        cc: "yasirk@qatar.cmu.edu",
+        subject: 'Ooredoo Bill Cycle', // Subject line
+        text: plaintext
+      };
+
+
+
+
+    // send mail with defined transport object
+    transporter.sendMail(mailOptions, (error, info) => {
+        if (error) {
+            emailNotSent =  emailNotSent + 1;
+            document.getElementById("showNotSent").innerHTML = emailNotSent;
+            document.getElementById("showSent").innerHTML = emailSent;
+            return console.log(error);
+            
+        }
+        emailSent = emailSent + 1;
+        console.log('Message %s sent: %s', info.messageId, info.response);
+        console.log(emailNotSent);
+        console.log(emailSent);
+        document.getElementById("showNotSent").innerHTML = emailNotSent;
+        document.getElementById("showSent").innerHTML = emailSent;
+
+    });
+
+  }
+
+}
+
+
+
+////////////////////////////////////////////////////////////// Dashboard Data ///////////////////////////////////////////////
+
+
+</script>

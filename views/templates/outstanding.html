@@ -1,0 +1,161 @@
+    <div class="navigation"></div>
+    <div id = "page-wrapper">
+      <div class="col-md-18">
+        <div class="plan">
+          <div class="plan-name">
+          <div class="table-responsive">
+            <center><h2 id="mainTitle"> All Outstanding Payments</h2></center>
+                <table id="mytableCheck" class="table table-bordred table-striped"></table>    
+          </div>  
+          </div>  
+        </div>
+      </div>
+    </div>
+<script type="text/javascript">
+
+        require('../renderer.js');
+
+        var $     = require( 'jquery' ); 
+        var mysql = require('mysql');
+
+        var connection = mysql.createConnection({
+            host     : 'mysql.qatar.cmu.local',
+            user     : 'fmbills_user',
+            password : 'F@mB11lsU$er', // or the original password : 'apaswword'
+            database : 'fmbills',
+            insecureAuth: true
+        });
+
+        // connect to mysql
+        connection.connect(function(err) {
+            // in case of error
+            if(err){
+                console.log(err.code);
+                console.log(err.fatal);
+            }
+        });
+        // var app = angular.module('myApp', []);
+        function endConnection() {
+          connection.end();
+        }
+        console.log("List of short term employees and vacant landlines:\n\n" == "List of short term employees and vacant landlines:\n\n")
+
+        $query = "SELECT `housing`.`unitNo`, `assignment`.`andrewId`, `assignment`.`landLine` , `bill`.`totalAmountDue` , `bill`.`billDate`, `compound`.`compName` , CONCAT_WS(' ', `employee`.`firstName`, `employee`.`lastName`) AS `empName`  FROM `compound` ,`housing`, `bill` LEFT JOIN `assignment` on `assignment`.`landline` = `bill`.`landLine` AND ((date_format(str_to_date(`bill`.`billDate`, '%d %M %Y'), '%Y-%m-%d') <`assignment`.`endDate` AND (date_format(str_to_date(`bill`.`billDate`, '%d %M %Y'), '%Y-%m-%d') >= `assignment`.`startDate`)) OR (`assignment`.`endDate` = '0000-00-00' AND (date_format(str_to_date(`bill`.`billDate`, '%d %M %Y'), '%Y-%m-%d') >= `assignment`.`startDate`))) INNER JOIN `employee` on `assignment`.`andrewId`=`employee`.`andrewId` WHERE `bill`.`totalAmountDue` >= 1000 AND `bill`.`landLine` = `housing`.`landLine` AND `employee`.`contractType` != 'Short Term' AND `housing`.`compId` = `compound`.`compId` AND ABS(DATEDIFF(date_format(str_to_date(`bill`.`billDate`, '%d %M %Y'), '%Y/%m/%d'),CURDATE())) <= 30; ";
+        connection.query($query, function(err, rows, fields) {
+          if(err){
+              console.log("An error ocurred performing the query.");
+              console.log(err);
+              return; 
+          }
+          console.log(rows)
+          $('#mytableCheck').bootstrapTable({
+              data: rows ,
+              height: 532,
+              cache: false,
+              striped: true,
+              pagination: true,
+              pageSize: 10,
+              pageList: [10,25,50,100,200],
+              minimumCountColumns: 2,
+              search: true,
+              checkboxEnable: true,
+              columns: [{
+                field: 'state',
+                title: '',
+                align: 'center',
+                checkbox: true
+              },  {
+                  field: 'andrewId',
+                  title: 'AndrewID',
+                  sortable: true
+              },{
+                  field: 'totalAmountDue',
+                  title: 'Total Amount Due',
+                  sortable: true
+              },{
+                  field: 'landLine',
+                  title: 'Landline',
+                  sortable: true
+              },{
+                  field: 'billDate',
+                  title: 'Bill Due',
+                  sortable: true
+              },{
+                  field: 'operate',
+                  title: 'Remind',
+                  align: 'center',
+                  events: operateEvents,
+                  formatter: operateFormatter
+              }, ]
+          });
+        });
+
+
+        function operateFormatter(value, row, index) {
+            return [
+                '<a class="sendReminder" href="javascript:void(0)" title="Edit">',
+                '<i class="glyphicon glyphicon-envelope"  data-toggle="" data-target="" ></i>',
+                '</a>  '
+            ].join('');
+        }
+
+        window.operateEvents = {
+            'click .sendReminder': function (e, value, row, index) {
+
+                sendMail(row.empName, row.landLine, row.totalAmountDue, row.unitNo, row.compName)
+            }
+        };
+
+
+        // const nodemailer = require('nodemailer');
+        // var hbs = require('nodemailer-express-handlebars')
+        // create reusable transporter object using the default SMTP transport
+        transporter = nodemailer.createTransport({
+            host: 'smtp.qatar.cmu.edu',
+            pool: true,
+            port: 25,
+            ignoreTLS: true,
+            secure: false, // secure:true for port 465, secure:false for port 587
+
+        });
+
+
+
+        transporter.use('compile',hbs({
+          viewPath: 'emailTemplates',
+          extName: '.hbs'
+        }))
+
+
+
+
+        function sendMail(empName, landLine, totalAmountDue, unitNo, compName){
+          // setup email data with unicode symbols
+          // console.log(pdfUrl)
+          let mailOptions = {
+              from: '"Ooredoo Bill" <no-reply-fmbills@qatar.cmu.edu>', // sender address
+              to: 'yasirk@qatar.cmu.edu', // list of receivers
+              subject: 'Ooredoo Bill Reminder', // Subject line
+              template: 'reminder',
+              context: {
+                compName: compName,
+                landLine: landLine,
+                totalAmountDue: totalAmountDue,
+                unitNo: unitNo,
+                compName: compName
+              }
+            };
+
+
+
+          // send mail with defined transport object
+          transporter.sendMail(mailOptions, (error, info) => {
+              if (error) {
+                  return console.log(error);
+              }
+              console.log('Message %s sent: %s', info.messageId, info.response);
+          });
+        }
+
+
+</script>

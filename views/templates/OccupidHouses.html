@@ -1,0 +1,451 @@
+
+    <div id = "page-wrapper">
+      <div class="control-group employeeAll">
+      <!-- Button -->
+
+    </div>
+    <div class="col-md-17">
+      <div class="plan">
+          <div class="plan-name">
+            <center>
+            <h2>Occupied Houses</h2>
+            </center>
+          </div>
+          <div class="table-responsive" style="color: #990000;">
+                <table id="occupiedHouses" class="table table-bordred table-striped"></table>    
+          </div>  
+        </div>
+        </div>
+
+
+           <div class="modal fade" id="editAssignment" role="dialog">
+                <div class="modal-dialog">
+                
+                  <!-- Modal content-->
+                  <div class="modal-content">
+                    <div class="modal-body">
+                      
+                    <div id = "assignmentId" style="display: none;"></div>
+
+
+
+                      <form class="form-horizontal" action='' method="POST">
+                        <fieldset>
+                          <div id="legend">
+                            <legend class="">Edit Employee</legend>
+                          </div>
+
+
+<!--                           <div class="control-group">
+                            <label class="control-label"  for="UN">Unit Number</label>
+                            <div class="controls">
+                              <input id = "houseUnitId" type="text" placeholder="Unit Number" class="input-xlarge">
+                            </div>
+                          </div>
+ -->
+                           <div class="control-group">
+                            <label class="control-label">Landline Number</label>
+                            <div id = "landLineSelect">
+                              <select name = "landLine" id="assignmentLandlineNo">
+                              </select>
+                           </div>
+                          </div>
+
+
+<!--                           <div class="control-group">
+                            <label class="control-label" >Compound Name</label>
+                                  <div class = "compNameSelect">
+                                    <select id="housingCompName2">
+                                    </select>
+                                 </div>
+                          </div> -->
+
+                          <div class="control-group">
+                            <label class="control-label">Start Date</label>
+                            <div class="controls">
+                              <input id = "assignmentStartDate" type="date" placeholder="" class="input-xlarge">
+                            </div>
+                          </div>
+                        <div class="control-group">
+                            <label class="control-label">End Date</label>
+                            <div class="controls">
+                              <input id = "assignmentEndDate" type="date" placeholder="" class="input-xlarge">
+                            </div>
+                          </div>
+                       
+
+                          
+                          <div class="control-group">
+                            <label class="control-label"  for="UN">Employee Andrew ID</label>
+                            <div class = "andrewIdSelect">
+                              <select name = "andrewId" id="assignmentAndrewId">
+                              </select>
+                           </div>
+                          </div>
+
+
+                       <br>
+                          <div class="control-group">
+                            <!-- Button -->
+                            <div>
+                              <a href="#" class="btn btn-primary btn-md" onclick = "updateLandLineAssignment()">Update</a>
+                            </div>
+                          </div>
+                        </fieldset>
+                      </form>
+
+
+
+
+
+
+                    </div>
+                    <div class="modal-footer">
+                      <button type="button" class="btn btn-default" onclick = "closeCall()" data-dismiss="modal">Close</button>
+                    </div>
+                  </div>
+                  
+                </div>
+              </div>
+
+
+           <div class="modal fade" id="endAssignment" role="dialog">
+                <div class="modal-dialog">
+                
+                  <!-- Modal content-->
+                  <div class="modal-content">
+                    <div class="modal-body">
+                      
+                    <div id = "assignmentIdEnd" style="display: none;"></div>
+                    <div id = "assignmentlandLineEnd" style="display: none;"></div>
+
+
+
+                      <form class="form-horizontal" action='' method="POST">
+                        <fieldset>
+                          <div id="legend">
+                            <legend class="">Edit Employee</legend>
+                          </div>
+
+
+                        <div class="control-group">
+                            <label class="control-label">End Date</label>
+                            <div class="controls">
+                              <input id = "assignmentEndDateEnd" type="date" placeholder="" class="input-xlarge">
+                            </div>
+                          </div>
+
+
+                       <br>
+                          <div class="control-group">
+                            <!-- Button -->
+                            <div>
+                              <a href="#" class="btn btn-primary btn-md" onclick = "endAssignment()">Update</a>
+                            </div>
+                          </div>
+                        </fieldset>
+                      </form>
+
+
+
+
+
+
+                    </div>
+                    <div class="modal-footer">
+                      <button type="button" class="btn btn-default" onclick = "closeCall()" data-dismiss="modal">Close</button>
+                    </div>
+                  </div>
+                  
+                </div>
+              </div>
+
+
+
+    <script>
+
+
+        require('../renderer.js');
+
+
+        function endConnection() {
+          connection.end();
+        }
+
+
+
+        $query = "SELECT `housing`.`unitNo`, `housing`.`landLine`, `employee`.`andrewId`, `compound`.`compName`, date_format(`assignment`.`startDate`, '%M %e, %Y') as startDate, date_format(`assignment`.`startDate`, '%Y-%m-%d') as startDateDisplay, date_format(`assignment`.`endDate`, '%Y-%m-%d') as endDateDisplay, date_format(`assignment`.`endDate`, '%M %e, %Y') as endDate, CONCAT_WS(' ', `employee`.`firstName`, `employee`.`lastName`) AS `empName`, `assignment`.`assignmentId` FROM `housing`, `compound`, `assignment`, `employee` WHERE `housing`.`compId` = `compound`.`compId` AND `housing`.`landline` = `assignment`.`landline` AND `employee`.`andrewId` = `assignment`.`andrewId` AND (DATEDIFF(`assignment`.`endDate`,CURDATE()) > 0 OR `assignment`.`endDate` = '0000-00-00') ;";
+
+
+        connection.query($query, function(err, rows, fields) {
+          if(err){
+              console.log("An error ocurred performing the query.");
+              console.log(err);
+              return; 
+          }
+
+
+          $('#occupiedHouses').bootstrapTable({
+              data: rows ,
+              height: 532,
+              cache: false,
+              striped: true,
+              pagination: true,
+              pageSize: 10,
+              pageList: [10,25,50,100,200],
+              minimumCountColumns: 2,
+              search: true,
+              checkboxEnable: true,
+              columns: [{
+
+                  field: 'unitNo',
+                  title: 'Housing Unit',
+                  sortable: true
+              }, {
+                  field: 'landLine',
+                  title: 'Landline',
+                  sortable: true
+              }, {
+                  field: 'compName',
+                  title: 'Compound Name',
+                  sortable: true
+              }, {
+                  field: 'startDate',
+                  title: 'Start Date',
+                  sortable: true
+              }, {
+                  field: 'endDate',
+                  title: 'End Date',
+                  sortable: true
+              }, {
+                  field: 'empName',
+                  title: 'Employee',
+                  sortable: true
+              },  {
+                  field: 'operateEndAssignment',
+                  title: 'End',
+                  align: 'center',
+                  events: operateEventsEnd,
+                  formatter: operateFormatterEnd
+              },{
+                  field: 'operate',
+                  title: 'Edit',
+                  align: 'center',
+                  events: operateEventsAssignment,
+                  formatter: operateFormatterAssignment
+              }, ]
+          });
+        });
+
+
+
+        function operateFormatterAssignment(value, row, index) {
+            return [
+                '<a class="edit" href="javascript:void(0)" title="Edit">',
+                '<i class="glyphicon glyphicon-edit"  data-toggle="modal" data-target="#editAssignment" ></i>',
+                '</a>  '
+            ].join('');
+        }
+
+
+
+        function closeCall(){
+          $("select[name=landLine] option:last").remove();
+          $("select[name=andrewId] option:last").remove();
+        }
+
+
+        window.operateEventsAssignment = {
+            'click .edit': function (e, value, row, index) {
+              if (0 == $('div.landLineSelect option[value='+row.landLine+']').length && 0 == $('div.andrewIdSelect option[value='+row.andrewId+']').length){
+                $('#assignmentAndrewId').append($('<option value = "'+ row.andrewId+ '" >'+ row.andrewId + '</option>'))
+                $('#assignmentLandlineNo').append($('<option value = "'+ row.landLine+ '" >'+ row.landLine + '</option>'))
+              }
+              $("#assignmentStartDate").val(row.startDateDisplay)
+              $("#assignmentEndDate").val(row.endDateDisplay)
+              $("div.landLineSelect select").val(row.landLine);
+              $("div.andrewIdSelect select").val(row.andrewId);
+              $("#assignmentId").val(row.assignmentId)
+
+              $('#andrewIdSelect option:last').prop('selected', true);
+              $('#landLineSelect option:last').prop('selected', true);
+              console.log(typeof row.startDate)
+
+              // $("div.compNameSelect select").val(row.compId);
+              // $("#housingUnitId").val(row.unitNo)
+            }
+        };
+
+
+
+
+
+    $query = "SELECT `employee`.`andrewId` FROM `employee` LEFT JOIN `assignment` on `employee`.`andrewId` = `assignment`.`andrewId` WHERE `assignment`.`andrewId` is null";
+
+    connection.query($query, function(err, rows, fields) {
+        if(err){
+            console.log("An error ocurred performing the query.");
+            console.log(err);
+            return;
+        }
+        console.log(rows)
+      $.each(rows, function(i, value) {
+          $('#assignmentAndrewId').append($('<option value = "'+ value.andrewId+ '" >'+ value.andrewId + '</option>'))
+      });
+
+    });
+
+
+    $query = "SELECT `landLine` FROM `housing` WHERE `vacant` = 1"
+    connection.query($query, function(err, rows, fields) {
+        if(err){
+            console.log("An error ocurred performing the query.");
+            console.log(err);
+            return;
+        }
+      $.each(rows, function(i, value) {
+          $('#assignmentLandlineNo').append($('<option value = "'+ value.landLine+ '" >'+ value.landLine + '</option>'))
+      });
+
+    });
+
+
+        function updateLandLineAssignment(){
+            var startDate = document.getElementById("assignmentStartDate").value
+            var endDate = document.getElementById("assignmentEndDate").value
+            // var unitNo = document.getElementById("housingUnitId").value
+            var landLine = document.getElementById("assignmentLandlineNo").value
+            // var compName = document.getElementById("housingCompName2").value
+            var andrewId = document.getElementById("assignmentAndrewId").value
+            var assignmentId = document.getElementById("assignmentId").value
+
+        // UPDATE table_name SET field1 = new-value1, field2 = new-value2
+        // [WHERE Clause]
+
+          
+            if(andrewId == null || andrewId == "" || andrewId == "Select Andrew ID"){
+                alert("Andrew ID is required!!", "Bill Management System");
+                return;
+            }
+
+            if(landLine == null || landLine == "" || landLine == "Select Landline Number"){
+                alert("Landline Number is required!!", "Bill Management System");
+                return;
+            }
+
+            if (startDate == "" || startDate == null) {
+                alert("Start Date is required!!", "Bill Management System");
+                return;
+            }
+
+
+            if (endDate != null && endDate != ""){
+                if (endDate <= startDate){
+                    alert("End date cannot be before or on the Start Date.", "Bill Management System");
+                    return;
+                }
+            }
+
+          $query = "UPDATE `assignment` SET `startdate` = '"+ startDate + "', `enddate` = '"+ endDate +"', `landline` = '"+ landLine +"', andrewId = '"+ andrewId+"' WHERE assignmentId = '"+ assignmentId+"';";
+
+          connection.query($query, function(err, rows, fields) {
+              if(err){
+                  console.log("An error ocurred performing the query.");
+                  console.log(err);
+                  return;
+              }
+
+              alert("Assignment Succesfully Updated!")
+              $('#editAssignment').modal().hide();
+              $(".modal-backdrop").remove();
+              jQuery('body').removeClass('modal-open');
+              goOccupidHouses();
+ 
+          });
+        }
+
+
+
+
+
+
+
+        function operateFormatterEnd(value, row, index) {
+            return [
+                '<a class="end" href="javascript:void(0)" title="End">',
+                '<i class="glyphicon glyphicon-remove"  data-toggle="modal" data-target="#endAssignment" ></i>',
+                '</a>  '
+            ].join('');
+        }
+        var count = 0
+        window.operateEventsEnd = {
+            'click .end': function (e, value, row, index) {
+
+              $("#assignmentEndDateEnd").val(row.endDateDisplay)
+              $("#assignmentIdEnd").val(row.assignmentId)
+              $("#assignmentlandLineEnd").val(row.landLine)
+
+            }
+        };
+
+
+
+        function endAssignment(){
+          // var date = new Date();
+          // date = "" + date.getFullYear() +"-"+(date.getMonth()+1) + "-" + date.getDate();
+
+          var endDate = document.getElementById("assignmentEndDateEnd").value
+          var assignmentId = document.getElementById("assignmentIdEnd").value
+          var assignmentlandLineEnd = document.getElementById("assignmentlandLineEnd").value
+
+          var a = new Date();
+          if (endDate == null || endDate == ""){
+            var r = confirm("Are you sure you want to keep the end date empty?");
+            if (r == false) {
+                return;
+            }
+          }
+
+          $query = "Update `assignment` SET `endDate` = '"+endDate +"' WHERE `assignmentId` = '"+  assignmentId  +"'";
+
+          connection.query($query, function(err, rows, fields) {
+              if(err){
+                  console.log("An error ocurred performing the query.");
+                  console.log(err);
+                  return;
+              }
+              var d1 = new Date();
+              var d2 = new Date(endDate);
+              console.log(DateDiff.inDays(d1, d2) + ": Date difference")
+              if (DateDiff.inDays(d1, d2) <= 0){
+                $query = "UPDATE `housing` SET `vacant` = 1 WHERE `landLine` = "+assignmentlandLineEnd
+
+                connection.query($query, function(err, rows, fields) {
+                    if(err){
+                        console.log("An error ocurred performing the query.");
+                        console.log(err);
+                        return;
+                    }
+                    
+                    alert("Assignment will succesfully end on the given date!", "Bill Management System")
+                    $('#endAssignment').modal().hide();
+                    $(".modal-backdrop").remove();
+                    jQuery('body').removeClass('modal-open');
+                    goOccupidHouses();
+                });   
+              }
+              else{
+                alert("Assignment will succesfully end on the given date!", "Bill Management System")
+                $('#endAssignment').modal().hide();
+                $(".modal-backdrop").remove();
+                jQuery('body').removeClass('modal-open');
+                goOccupidHouses();
+              }
+
+
+          });
+        }
+
+
+
+</script>

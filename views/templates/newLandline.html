@@ -1,0 +1,113 @@
+    <div class="navigation"></div>
+    <div id = "page-wrapper">
+      <form class="form-horizontal" action='' method="POST">
+  <fieldset>
+    <div id="legend">
+      <legend class="">LandLine</legend>
+    </div>
+    <div class="control-group">
+      <label class="control-label"  for="UN">Employee Andrew ID</label>
+      <div id = "Select">
+        <select id="assignmentAndrewId">
+        </select>
+     </div>
+
+    </div>
+     <div class="control-group">
+      <label class="control-label">Landline Number</label>
+      <div id = "Select">
+        <select id="assignmentLandlineNo">
+        </select>
+     </div>
+    </div>
+ 
+    <div class="control-group">
+      <label class="control-label">Start Date</label>
+      <div class="controls">
+        <input id = "assignmentStartDate" type="date" placeholder="" class="input-xlarge">
+      </div>
+    </div>
+  <div class="control-group">
+      <label class="control-label">End Date</label>
+      <div class="controls">
+        <input id = "assignmentEndDate" type="date" placeholder="" class="input-xlarge">
+      </div>
+    </div>
+    <div class="control-group">
+      <!-- Button -->
+      <div class="controls"><br>
+        <a href="#" class="btn btn-primary btn-md" onclick = "addAssignment()" >Add</a>
+      </div>
+    </div>
+  </fieldset>
+</form>
+
+</table>
+
+
+      </fieldset>
+
+    </div>
+
+
+
+<script type="text/javascript">
+  
+    var connection = mysql.createConnection({
+            host     : 'mysql.qatar.cmu.local',
+            user     : 'fmbills_user',
+            password : 'F@mB11lsU$er', // or the original password : 'apaswword'
+            database : 'fmbills',
+            insecureAuth: true
+    });
+
+    // connect to mysql
+    connection.connect(function(err) {
+        // in case of error
+        if(err){
+            console.log(err.code);
+            console.log(err.fatal);
+        }
+    });
+
+    $query = "SELECT `employee`.`andrewId` FROM `employee` LEFT JOIN `assignment` on `employee`.`andrewId` = `assignment`.`andrewId` WHERE `assignment`.`andrewId` is null";
+
+    connection.query($query, function(err, rows, fields) {
+        if(err){
+            console.log("An error ocurred performing the query.");
+            console.log(err);
+            return;
+        }
+        console.log(rows)
+        $('#assignmentAndrewId').append($('<option>Select Andrew ID</option>'));
+      $.each(rows, function(i, value) {
+          $('#assignmentAndrewId').append($('<option value = "'+ value.andrewId+ '" >'+ value.andrewId + '</option>'))
+      });
+
+    });
+
+
+    $query = "SELECT `landLine` FROM `housing` WHERE `vacant` = 1"
+    connection.query($query, function(err, rows, fields) {
+        if(err){
+            console.log("An error ocurred performing the query.");
+            console.log(err);
+            return;
+        }
+      $('#assignmentLandlineNo').append($('<option>Select Landline Number</option>'));
+      $.each(rows, function(i, value) {
+          $('#assignmentLandlineNo').append($('<option value = "'+ value.landLine+ '" >'+ value.landLine + '</option>'))
+      });
+
+    });
+
+
+
+
+
+
+</script>
+
+
+
+  <script src="../renderer.js">  </script>

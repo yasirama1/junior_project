@@ -1,0 +1,445 @@
+
+    <div id = "page-wrapper">
+      <div class="control-group employeeAll">
+      <!-- Button -->
+
+    </div>
+    <div class="col-md-17">
+      <div class="plan">
+          <div class="plan-name">
+            <center>
+            <h2>All Houses</h2>
+            </center>
+          </div>
+          <div class="table-responsive" style="color: #990000;">
+                <a onclick="goNewHouse()" class="btn btn-danger" role="button">New House</a>
+                <table id="allHousesTable" class="table table-bordred table-striped"></table>    
+          </div>  
+        </div>
+        </div>
+
+
+            <div class="modal fade" id="myModal" role="dialog">
+                <div class="modal-dialog">
+                
+                  <!-- Modal content-->
+                  <div class="modal-content">
+                    <div class="modal-body">
+                      
+
+                      <div id = "landLineReal" style="display: none;"></div>
+
+
+                      <form class="form-horizontal" action='' method="POST">
+                        <fieldset>
+                          <div id="legend">
+                            <legend class="">Edit House</legend>
+                          </div>
+                          <div class="control-group">
+                            <label class="control-label"  for="FN">Unit Number</label>
+                            <div class="controls">
+                              <input id="housingUnitNo" type="text" placeholder="Unit Number" class="input-xlarge">
+                            </div>
+                          </div>
+                           <div class="control-group">
+                            <label class="control-label"  for="LN">Landline</label>
+                            <div class="controls">
+                              <input id="housingLandLine" type="text" placeholder="Landline" class="input-xlarge">
+                            </div>
+                          </div>
+                       
+                          <div class="control-group">
+                            <label class="control-label" >Compound Name</label>
+                                  <div class = "SelectHouse">
+                                    <select id="housingCompName">
+                                    </select>
+                                 </div>
+                          </div>
+                       <br>
+                          <div class="control-group">
+                            <!-- Button -->
+                            <div>
+                              <a href="#" class="btn btn-primary btn-md" onclick = "updateHousing()">Update</a>
+                            </div>
+                          </div>
+                        </fieldset>
+                      </form>
+                    </div>
+                    <div class="modal-footer">
+                      <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+                    </div>
+                  </div>
+                  
+                </div>
+              </div>
+
+              <!-- All bills-->
+              <div class="modal fade" id="MyBillsModal" role="dialog">
+                <div class="modal-dialog">
+                
+                  <!-- Modal content-->
+                  <div class="modal-content">
+                    <div class="modal-body">
+                      <div class="table-responsive billsDiv" style="color: #990000;">
+                        <table id="allBills" class="table table-bordred table-striped"></table>    
+                      </div>  
+                    </div>
+                    <div class="modal-footer">
+                      <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+                    </div>
+                  </div>
+                  
+                </div>
+              </div>
+              <!-- All Assignments-->
+              <div class="modal fade" id="MyAssignmentsModal" role="dialog">
+                <div class="modal-dialog">
+                
+                  <!-- Modal content-->
+                  <div class="modal-content">
+                    <div class="modal-body">
+                      <div class="table-responsive assignmentsDiv" style="color: #990000;">
+                        <table id="allAssignments" class="table table-bordred table-striped"></table>    
+                      </div>  
+                    </div>
+                    <div class="modal-footer">
+                      <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+                    </div>
+                  </div>
+                  
+                </div>
+              </div>
+
+
+
+<script type="text/javascript">
+
+
+        require('../renderer.js');
+
+        var $     = require( 'jquery' ); 
+        var mysql = require('mysql');
+        // var bcrypt = require('bcrypt');
+
+
+        var connection = mysql.createConnection({
+            host     : 'mysql.qatar.cmu.local',
+            user     : 'fmbills_user',
+            password : 'F@mB11lsU$er', // or the original password : 'apaswword'
+            database : 'fmbills',
+            insecureAuth: true
+        });
+
+        // connect to mysql
+        connection.connect(function(err) {
+            // in case of error
+            if(err){
+                console.log(err.code);
+                console.log(err.fatal);
+            }
+        });
+
+
+
+
+        // var app = angular.module('myApp', []);
+
+
+        function endConnection() {
+          connection.end();
+        }
+
+
+        $query = "SELECT `housing`.`unitNo`, `housing`.`landLine`, `compound`.`compName`, `compound`.`compId` FROM `housing` INNER join `compound` where `housing`.`compId` = `compound`.`compId`;";
+
+        connection.query($query, function(err, rows, fields) {
+          if(err){
+              console.log("An error ocurred performing the query.");
+              console.log(err);
+              return; 
+          }
+          console.log(rows)
+          $('#allHousesTable').bootstrapTable({
+              data: rows ,
+              height: 532,
+              cache: false,
+              striped: true,
+              pagination: true,
+              pageSize: 10,
+              pageList: [10,25,50,100,200],
+              minimumCountColumns: 2,
+              search: true,
+              checkboxEnable: true,
+              columns: [{
+                  field: 'unitNo',
+                  title: 'Unit Number',
+                  sortable: true,
+              }, {
+                  field: 'landLine',
+                  title: 'Landline Number',
+                  sortable: true
+              }, {
+                  field: 'compName',
+                  title: 'Compound Name',
+                  sortable: true
+              },  {
+                  field: 'operate',
+                  title: 'Edit',
+                  align: 'center',
+                  events: operateEventsOccupied,
+                  formatter: operateFormatter
+              }, {
+                  field: 'operateBills',
+                  title: 'Bills',
+                  align: 'center',
+                  events: operateEventsBill,
+                  formatter: operateFormatterBill
+              },{
+                  field: 'operateAssignments',
+                  title: 'Assignments',
+                  align: 'center',
+                  events: operateEventsAssignment,
+                  formatter: operateFormatterAssignment
+              },]
+          });
+        });
+
+
+        function operateFormatter(value, row, index) {
+            return [
+                '<a class="edit" href="javascript:void(0)" title="Edit">',
+                '<i class="glyphicon glyphicon-edit"  data-toggle="modal" data-target="#myModal" ></i>',
+                '</a>  '
+            ].join('');
+        }
+  
+        window.operateEventsOccupied = {
+            'click .edit': function (e, value, row, index) {
+              $("#housingUnitNo").val(row.unitNo)
+              $("#housingLandLine").val(row.landLine)
+              $("#landLineReal").val(row.landLine)
+              $("div.SelectHouse select").val(row.compId);
+            }
+        };
+       
+
+        function updateHousing(){
+
+            var unitNo = document.getElementById("housingUnitNo").value
+            var landLine = document.getElementById("housingLandLine").value
+            var compName = document.getElementById("housingCompName").value
+            var landLineReal = document.getElementById("landLineReal").value
+
+            if (landLine == null || landLine == ""){
+                alert("Landline number is required", "Bill Management System");
+                return;
+            }
+
+            if (compName == null || compName == "" || compName == "Select.."){
+                alert("Compound name is required", "Bill Management System");
+                return;
+            }
+
+            if (unitNo == null || unitNo == ""){
+                alert("Unit number is required", "Bill Management System");
+                return;
+            }
+
+            if (landLine.length > 8 || landLine.length < 8){
+                alert(landLine + " is not a valid landline\nKindly put a number with format 4xxxxxxx", "Bill Management System");
+                return;
+            }
+
+        // UPDATE table_name SET field1 = new-value1, field2 = new-value2
+        // [WHERE Clause]
+
+
+          $query = "UPDATE `housing` SET `unitNo` = '"+  unitNo  +"', `compId` = '"+ compName + "', `landLine` = '"+ landLine + "' WHERE `landLine` = '"+  landLineReal  +"'";
+
+          connection.query($query, function(err, rows, fields) {
+              if(err){
+                  console.log("An error ocurred performing the query.");
+                  console.log(err);
+                  return;
+              }
+              alert("Housing Succesfully Updated!", "Bill Management System")
+              $('#myModal').modal().hide();
+              $(".modal-backdrop").remove();
+              jQuery('body').removeClass('modal-open');
+              goLandlineMain();
+          });
+        }
+
+
+
+        $query = "SELECT * FROM `compound`";
+
+        connection.query($query, function(err, rows, fields) {
+            if(err){
+                console.log("An error ocurred performing the query.");
+                console.log(err);
+                return;
+            }
+          var compIds = rows
+          $('#housingCompName').append($('<option>Select..</option>'))
+          $.each(rows, function(i, value) {
+              $('#housingCompName').append($('<option value = "'+ value.compId+ '" >'+ value.compName + '</option>'))
+          });
+
+        });
+
+
+
+
+
+      function operateFormatterBill(value, row, index) {
+                  return [
+                      '<a class="bills" href="javascript:void(0)" title="bills">',
+                      '<i class="fa fa-folder"  aria-hidden="true" data-toggle="modal" data-target="#MyBillsModal" ></i>',
+                      '</a>  '
+                  ].join('');
+              }
+
+       window.operateEventsBill = {
+
+
+                  'click .bills': function (e, value, row, index) {
+                    $('.billsDiv').append('<table id="allBills" class="table table-bordred table-striped"></table>')
+
+                    $query = "SELECT * FROM `bill` where `landline` ='" + row.landLine+"';"
+
+                            connection.query($query, function(err, rows, fields) {
+                              if(err){
+                                  console.log("An error ocurred performing the query.");
+                                  console.log(err);
+                                  return; 
+                              }
+                              console.log(rows)
+                              // console.log(("#landLineReal").val)
+                              $('#allBills').bootstrapTable({
+                                  data: rows ,
+                                  height: 532,
+                                  cache: false,
+                                  striped: true,
+                                  pagination: true,
+                                  pageSize: 10,
+                                  pageList: [10,25,50,100,200],
+                                  minimumCountColumns: 2,
+                                  search: true,
+                                  showRefresh:true,
+                                  checkboxEnable: true,
+                                  columns: [ {
+                                      field: 'billNo',
+                                      title: 'Bill Number',
+                                      sortable: true,
+                                  }, {
+                                      field: 'billPeriod',
+                                      title: 'Bill Period',
+                                      sortable: true
+                                  }, {
+                                      field: 'totalAmountDue',
+                                      title: 'TotalAmountDue',
+                                      sortable: true
+                                  },  {
+                                      field: 'pdfurl',
+                                      title: 'PDF',
+                                      align: 'center',
+                                      events: operateEventsPDF,
+                                      formatter: operateFormatterPDF
+                                  }, ]
+                              });
+                            });
+                            
+                            function operateFormatterPDF(value, row, index) {
+                                return [
+                                    '<a class="openFile" href="javascript:void(0)" title="Open PDF">',
+                                    '<i class="glyphicon glyphicon-open-file"  data-toggle="" data-target="" ></i>',
+                                    '</a>  '
+                                ].join('');
+                            }
+                      
+                            window.operateEventsPDF = {
+
+                                'click .openFile': function (e, value, row, index) {
+
+                                  url = row.pdfUrl;
+                                  openPDf(url);
+                                }
+                            };
+
+                            function openPDf(url){
+                              const shell = remote.getGlobal('shell');
+                              if (shell.openItem(url)){
+                                shell.openItem(url);
+                              }
+                              else{
+                                alert("Couldn't open link.", "Bill Management System");
+                              }
+                            }
+                    }
+              };    
+
+        
+
+        function operateFormatterAssignment(value, row, index) {
+                  return [
+                      '<a class="assignments" href="javascript:void(0)" title="assignments">',
+                      '<i class="fa fa-list"  aria-hidden="true" data-toggle="modal" data-target="#MyAssignmentsModal" ></i>',
+                      '</a>  '
+                  ].join('');
+              }  
+        window.operateEventsAssignment = {
+
+
+                  'click .assignments': function (e, value, row, index) {
+                    $('.assignmentsDiv').append('<table id="allAssignments" class="table table-bordred table-striped"></table>')
+
+                    $query = "SELECT CONCAT_WS(' ', `employee`.`firstName`, `employee`.`lastName`) AS `empName` , `assignment`.`landLine` , date_format(`assignment`.`startDate`, '%M %e, %Y') as startDate , date_format(`assignment`.`endDate`, '%M %e, %Y') as endDate FROM `assignment` INNER join `employee` on `employee`.`andrewId`= `assignment`.`andrewId` where `landline` ='" + row.landLine+"';"
+
+                            connection.query($query, function(err, rows, fields) {
+                              if(err){
+                                  console.log("An error ocurred performing the query.");
+                                  console.log(err);
+                                  return; 
+                              }
+                              console.log(rows)
+                              // console.log(("#landLineReal").val)
+                              $('#allAssignments').bootstrapTable({
+                                  data: rows ,
+                                  height: 532,
+                                  cache: false,
+                                  striped: true,
+                                  pagination: true,
+                                  pageSize: 10,
+                                  pageList: [10,25,50,100,200],
+                                  minimumCountColumns: 2,
+                                  search: true,
+                                  showRefresh:true,
+                                  checkboxEnable: true,
+                                  columns: [{
+                                    field: 'state',
+                                    title: '',
+                                    align: 'center',
+                                    checkbox: true
+                                  }, {
+                                      field: 'empName',
+                                      title: 'Employee ',
+                                      sortable: true,
+                                  }, {
+                                      field: 'landLine',
+                                      title: 'landLine',
+                                      sortable: true
+                                  }, {
+                                      field: 'startDate',
+                                      title: 'startDate',
+                                      sortable: true
+                                  },{
+                                      field: 'endDate',
+                                      title: 'endDate',
+                                      sortable: true
+                                  }, ]
+                              });
+                            });
+                    }
+              };                             
+</script>

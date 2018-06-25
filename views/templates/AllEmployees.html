@@ -1,0 +1,589 @@
+
+    <div id = "page-wrapper">
+      <div class="control-group employeeAll">
+      <!-- Button -->
+
+    </div>
+    <div class="col-md-17">
+      <div class="plan">
+          <div class="plan-name">
+            <center>
+            <h2>All Employees</h2>
+            </center>
+          </div>
+          <div class="table-responsive" style="color: #990000;">
+
+                <a onclick="goNewEmployee()" class="btn btn-danger" role="button">New Employee</a>
+                <table id="allEmployeesTable" class="table table-bordred table-striped"></table>    
+          </div>  
+        </div>
+        </div>
+
+
+        <!-- Edit Employee -->
+            <div class="modal fade" id="myModal" role="dialog">
+                <div class="modal-dialog">
+                
+                  <!-- Modal content-->
+                  <div class="modal-content">
+                    <div class="modal-body">
+                      
+
+
+                      <div id = "andrewIdReal" style="display: none;"></div>
+
+                      <form class="form-horizontal" action='' method="POST">
+                        <fieldset>
+                          <div id="legend">
+                            <legend class="">Edit Employee</legend>
+                          </div>
+                          <div class="control-group">
+                            <label class="control-label"  for="FN">First Name</label>
+                            <div class="controls">
+                              <input id="employeeFirstName" type="text" placeholder="First Name" class="input-xlarge">
+                            </div>
+                          </div>
+                           <div class="control-group">
+                            <label class="control-label"  for="LN">Last Name</label>
+                            <div class="controls">
+                              <input id="employeeLastName" type="text" placeholder="Last Name" class="input-xlarge">
+                            </div>
+                          </div>
+                       
+                          <div class="control-group">
+                            <!-- E-mail -->
+                            <label class="control-label" for="email">E-mail</label>
+                            <div class="controls">
+                              <input id="employeeEmail" type="text" placeholder="Email" class="input-xlarge">
+                            </div>
+                          </div>
+                       
+                           <div class="control-group">
+                            <!-- AndrewID -->
+                            <label class="control-label" for="andrewId">AndrewID</label>
+                            <div class="controls">
+                              <input id="employeeAndrewId" type="text" placeholder="AndrewID" class="input-xlarge">
+                            </div>
+                          </div>
+                       <br>
+
+                          <div class="control-group SelectContractType">                      
+                            <select id="employeeContractType" placeholder="Select Contract Type">
+                              <option>Select Cotract Type</option>
+                              <option>Short Term</option>
+                              <option>Long Term</option>
+                              <option>Long Term Extended</option>
+                            </select>
+                          </div>
+                       <br>
+                          <div class="control-group">
+                            <!-- Button -->
+                            <div>
+                              <a href="#" class="btn btn-primary btn-md" onclick = "updateEmployee()" >Update</a>
+                            </div>
+                          </div>
+                        </fieldset>
+                      </form>
+
+
+
+
+
+
+                    </div>
+                    <div class="modal-footer">
+                      <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+                    </div>
+                  </div>
+                  
+                </div>
+              </div>
+
+
+
+              <!-- All bills-->
+              <div class="modal fade" id="billsModal" role="dialog">
+                <div class="modal-dialog">
+                
+                  <!-- Modal content-->
+                  <div class="modal-content">
+                    <div class="modal-body">
+                      <div class="table-responsive employeeBillsDiv" style="color: #990000;">
+                        <table id="allEmployeeBills" class="table table-bordred table-striped"></table>    
+                      </div>  
+                    </div>
+                    <div class="modal-footer">
+                      <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+                    </div>
+                  </div>
+                  
+                </div>
+              </div>
+
+                            <!-- All Assignments-->
+              <div class="modal fade" id="MyAssignmentsModal" role="dialog">
+                <div class="modal-dialog">
+                
+                  <!-- Modal content-->
+                  <div class="modal-content">
+                    <div class="modal-body">
+                      <div class="table-responsive assignmentsDiv" style="color: #990000;">
+                        <table id="allAssignments" class="table table-bordred table-striped"></table>    
+                      </div>  
+                    </div>
+                    <div class="modal-footer">
+                      <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+                    </div>
+                  </div>
+                  
+                </div>
+              </div>
+
+
+
+
+<script type="text/javascript">
+
+
+        require('../renderer.js');
+
+        var $     = require( 'jquery' ); 
+        var mysql = require('mysql');
+        // var bcrypt = require('bcrypt');
+
+
+        var connection = mysql.createConnection({
+            host     : 'mysql.qatar.cmu.local',
+            user     : 'fmbills_user',
+            password : 'F@mB11lsU$er', // or the original password : 'apaswword'
+            database : 'fmbills',
+            insecureAuth: true
+        });
+
+        // connect to mysql
+        connection.connect(function(err) {
+            // in case of error
+            if(err){
+                console.log(err.code);
+                console.log(err.fatal);
+            }
+        });
+
+
+
+
+        // var app = angular.module('myApp', []);
+
+
+        function endConnection() {
+          connection.end();
+        }
+
+
+        // $query = "SELECT `andrewId`, `firstName`, `lastName`, `email` , `contractType` FROM `employee`;";
+        // $query = "SELECT `employee`.`andrewId`, `employee`.`firstName`, `employee`.`lastName`, `employee`.`email` , `employee`.`contractType`, `housing`.`unitNo`, `compound`.`compName`, `housing`.`land FROM `employee` LEFT JOIN (SELECT * from `employee`, `compound` WHERE `employee`.`compId` = `compound`.`compId`) b WHERE "
+
+
+
+        // $query = "SELECT `andrewId`, `firstName`, `lastName`, `email` , `contractType` FROM `employee`;";
+
+        $query = "SELECT DISTINCT `employee`.`andrewId`, `employee`.`firstName`, `employee`.`lastName`, `employee`.`email` , `employee`.`contractType`, `housing`.`unitNo`, `housing`.`compName`, `housing`.`landLine` FROM `employee` LEFT JOIN `assignment` on `assignment`.`andrewId` = `employee`.`andrewId` LEFT JOIN (SELECT `housing`.`unitNo`, `compound`.`compName`, `housing`.`landLine` from `housing`, `compound` WHERE `housing`.`compId` = `compound`.`compId`) AS `housing` ON `employee`.`andrewId` = `housing`.`landLine`";
+
+
+        connection.query($query, function(err, rows, fields) {
+          if(err){
+              console.log("An error ocurred performing the query.");
+              console.log(err);
+              return; 
+          }
+          console.log(rows)
+          $('#allEmployeesTable').bootstrapTable({
+              data: rows ,
+              height: 530,
+              cache: false,
+              striped: true,
+              pagination: true,
+              pageSize: 10,
+              pageList: [10,25,50,100,200],
+              minimumCountColumns: 2,
+              search: true,
+              checkboxEnable: true,
+              columns: [{
+                  field: 'firstName',
+                  title: 'First Name',
+                  sortable: true,
+              }, {
+                  field: 'lastName',
+                  title: 'Last Name',
+                  sortable: true
+              }, {
+                  field: 'email',
+                  title: 'Email Address',
+                  sortable: true
+              }, {
+                  field: 'andrewId',
+                  title: 'AndrewID',
+                  sortable: true
+              }, 
+               {
+                  field: 'contractType',
+                  title: 'Contract Type',
+                  sortable: true,
+              }, {
+                  field: 'operate',
+                  title: 'Edit',
+                  align: 'center',
+                  events: operateEvents,
+                  formatter: operateFormatter
+              }, {
+                  field: 'operateBills',
+                  title: 'Bills',
+                  align: 'center',
+                  events: operateEventsBill,
+                  formatter: operateFormatterBill
+              },{
+                  field: 'operateAssignments',
+                  title: 'Assignments',
+                  align: 'center',
+                  events: operateEventsAssignment,
+                  formatter: operateFormatterAssignment
+              },]
+          });
+        });
+
+        var $table = $('#allEmployeesTable')
+
+
+
+///    EDIT EMPLOYEE FUNCTIONS
+        function operateFormatter(value, row, index) {
+            return [
+                '<a class="edit" href="javascript:void(0)" title="Edit">',
+                '<i class="glyphicon glyphicon-edit"  data-toggle="modal" data-target="#myModal" ></i>',
+                '</a>  '
+            ].join('');
+        }
+
+        window.operateEvents = {
+            'click .edit': function (e, value, row, index) {
+              $("#employeeFirstName").val(row.firstName)
+              $("#employeeLastName").val(row.lastName)
+              $("#employeeEmail").val(row.email)
+              $("#employeeAndrewId").val(row.andrewId) 
+              $("#andrewIdReal").val(row.andrewId)
+              $("div.SelectContractType select").val(row.contractType);
+            }
+        };
+
+
+
+        function updateEmployee(){
+        // UPDATE table_name SET field1 = new-value1, field2 = new-value2
+        // [WHERE Clause]
+
+          var email = document.getElementById("employeeEmail").value
+          var first = document.getElementById("employeeFirstName").value
+          var last = document.getElementById("employeeLastName").value
+          var andrewId = document.getElementById("employeeAndrewId").value
+          var contractType = document.getElementById("employeeContractType").value
+          var andrewIdReal = document.getElementById("andrewIdReal").value
+
+          if(first == null || first == ""){
+            alert("First name is required!!", "Bill Management System");
+            return;
+          }
+
+          if(last == null || last == ""){
+              alert("Last name is required!!", "Bill Management System");
+              return;
+          }
+
+
+          if(contractType == null || contractType == "" || contractType == "Select Cotract Type"){
+              alert("Contract Type is required", "Bill Management System");
+              return;
+          }
+
+          if(email == null || email == ""){
+              alert("email is required", "Bill Management System");
+              return;
+          }
+
+          var re = /^(([^<>()\[\]\.,;:\s@\"]+(\.[^<>()\[\]\.,;:\s@\"]+)*)|(\".+\"))@(([^<>()[\]\.,;:\s@\"]+\.)+[^<>()[\]\.,;:\s@\"]{2,})$/i;
+          
+          if (!re.test(email)){
+              alert(email + " is not a valid email address", "Bill Management System");
+              return;
+          }
+
+          var email_splitted = email.split("@");
+
+          email_splitted = email_splitted[0];
+
+          if (email_splitted != andrewId){
+
+              var dialog = remote.getGlobal('dialog');
+              var choice = dialog.showMessageBox(
+                  remote.getCurrentWindow(),
+                  {
+                      type: 'question',
+                      buttons: ['Yes', 'No'],
+                      title: 'Bill Management System. Confirm: ',
+                      message: 'Andrew ID is not the same as email.\nAre you sure you want to continue?'
+                  });
+
+              if (choice == 1) return;
+          }
+          $query = "UPDATE `employee` SET `email` = '"+  email  +"', firstName = '"+  first  +"', lastName = '"+  last  +"', `andrewId` = '"+ andrewId + "', `contractType` = '"+ contractType +"' WHERE `andrewId` = '"+  andrewIdReal  +"';";
+
+          connection.query($query, function(err, rows, fields) {
+              if(err){
+                  console.log("An error ocurred performing the query.");
+                  console.log(err);
+                  return;
+              } 
+              alert("Employee Succesfully Updated!", "Bill Management System")
+              $('#myModal').modal().hide();
+              $(".modal-backdrop").remove();
+              jQuery('body').removeClass('modal-open');
+
+              goEmployeeMain();
+          });
+        };
+
+
+
+
+
+
+
+      function operateFormatterBill(value, row, index) {
+                  return [
+                      '<a class="bill" href="javascript:void(0)" title="bills">',
+                      '<i class="fa fa-folder"  aria-hidden="true" data-toggle="modal" data-target="#billsModal" ></i>',
+                      '</a>  '
+                  ].join('');
+              }
+
+       window.operateEventsBill = {
+
+
+                  'click .bill': function (e, value, row, index) {
+                    $('.employeeBillsDiv').append('<table id="allEmployeeBills" class="table table-bordred table-striped"></table>')
+
+
+                    $query = "SELECT `housing`.`unitNo`, `employee`.`email`, `housing`.`landLine`, `compound`.`compName`, CONCAT_WS(' ', `employee`.`firstName`, `employee`.`lastName`) AS `empName`, `bill`.`billNo`, `bill`.`billPeriod`, `bill`.`totalAmountDue`, `bill`.`pdfUrl`  FROM `housing`, `compound` ,`employee`, `assignment` INNER JOIN `bill` on `assignment`.`landline` = `bill`.`landline` AND  ((date_format(str_to_date(`bill`.`billDate`, '%d %M %Y'), '%Y-%m-%d') <`assignment`.`endDate` AND (date_format(str_to_date(`bill`.`billDate`, '%d %M %Y'), '%Y-%m-%d') >= `assignment`.`startDate`)) OR (`assignment`.`endDate` = '0000-00-00' AND (date_format(str_to_date(`bill`.`billDate`, '%d %M %Y'), '%Y-%m-%d') > `assignment`.`startDate`)))  WHERE `bill`.`landLine` = `housing`.`landLine` AND `housing`.`compId` = `compound`.`compId` AND `assignment`.`andrewId` = '"+ row.andrewId + "' AND `assignment`.`andrewId`=`employee`.`andrewId`; ";
+                            connection.query($query, function(err, rows, fields) {
+                              if(err){
+                                  console.log("An error ocurred performing the query.");
+                                  console.log(err);
+                                  return; 
+                              }
+                              console.log(rows)
+                              // console.log(("#landLineReal").val)
+                              $('#allEmployeeBills').bootstrapTable({
+                                  data: rows ,
+                                  height: 532,
+                                  cache: false,
+                                  striped: true,
+                                  pagination: true,
+                                  pageSize: 10,
+                                  pageList: [10,25,50,100,200],
+                                  minimumCountColumns: 2,
+                                  search: true,
+                                  showRefresh:true,
+                                  checkboxEnable: true,
+                                  columns: [{
+                                    field: 'state',
+                                    title: '',
+                                    align: 'center',
+                                    checkbox: true
+                                  }, {
+                                      field: 'billNo',
+                                      title: 'Bill Number',
+                                      sortable: true,
+                                  }, {
+                                      field: 'billPeriod',
+                                      title: 'Bill Period',
+                                      sortable: true
+                                  }, {
+                                      field: 'totalAmountDue',
+                                      title: 'TotalAmountDue',
+                                      sortable: true
+                                  },  {
+                                      field: 'pdfurl',
+                                      title: 'PDF',
+                                      align: 'center',
+                                      events: operateEventsPDF,
+                                      formatter: operateFormatterPDF
+                                  }, {
+                                      field: 'operateSendBill',
+                                      title: 'Send Bill',
+                                      align: 'center',
+                                      events: operateEventsSendBill,
+                                      formatter: operateFormatterSendBill
+                                  },]
+                              });
+                            });
+
+                            
+                            function operateFormatterPDF(value, row, index) {
+                                return [
+                                    '<a class="openFile" href="javascript:void(0)" title="Open PDF">',
+                                    '<i class="glyphicon glyphicon-open-file"  data-toggle="" data-target="" ></i>',
+                                    '</a>  '
+                                ].join('');
+                            }
+                      
+                            window.operateEventsPDF = {
+
+                                'click .openFile': function (e, value, row, index) {
+
+                                  url = row.pdfUrl;
+                                  openPDf(url);
+                                }
+                            };
+
+                            function openPDf(url){
+                              const shell = remote.getGlobal('shell');
+                              if (shell.openItem(url)){
+                                shell.openItem(url);
+                              }
+                              else{
+                                alert("Couldn't open link.", "Bill Management System");
+                              }
+                            }
+
+                            function operateFormatterSendBill(value, row, index) {
+                                return [
+                                    '<a class="sendBill" href="javascript:void(0)" title="Send Bill">',
+                                    '<i class="glyphicon glyphicon-envelope"  data-toggle="" data-target="" ></i>',
+                                    '</a>  '
+                                ].join('');
+                            }
+
+                            window.operateEventsSendBill = {
+                                'click .sendBill': function (e, value, row, index) {
+                                    sendMail(row.email, row.empName, row.landLine, row.compName, row.pdfUrl, row.unitNo)
+                                }
+                            };
+
+
+                            // const nodemailer = require('nodemailer');
+                            // var hbs = require('nodemailer-express-handlebars')
+                            // create reusable transporter object using the default SMTP transport
+                            transporter = nodemailer.createTransport({
+                                host: 'smtp.qatar.cmu.edu',
+                                pool: true,
+                                port: 25,
+                                ignoreTLS: true,
+                                secure: false, // secure:true for port 465, secure:false for port 587
+
+                            });
+
+
+
+                            transporter.use('compile',hbs({
+                              viewPath: 'emailTemplates',
+                              extName: '.hbs'
+                            }))
+
+
+
+                            function sendMail(email,empName, landLine, compName, pdfUrl, unitNo){
+                              // setup email data with unicode symbols
+
+                              let mailOptions = {
+                                  from: '"Ooredoo Bill" <no-reply-fmbills@qatar.cmu.edu>', // sender address
+                                  to: email, // list of receivers
+                                  subject: 'Ooredoo Bill', // Subject line
+                                  template: 'yourBill',
+                                  attachments: [
+                                  {   
+                                      path: pdfUrl
+                                  }
+                                  ],
+                                  context: {
+                                    empName: empName,
+                                    landLine: landLine,
+                                    unitNo: unitNo,
+                                    compName: compName
+                                  }
+                                };
+
+
+
+                              // send mail with defined transport object
+                              transporter.sendMail(mailOptions, (error, info) => {
+                                  if (error) {
+                                      alert(error)
+                                      return;
+                                  }
+                                  alert('The bill is sent to '+ empName);
+                              });
+                            }
+
+                    }
+              };  
+
+
+
+        function operateFormatterAssignment(value, row, index) {
+                  return [
+                      '<a class="assignments" href="javascript:void(0)" title="assignments">',
+                      '<i class="fa fa-list"  aria-hidden="true" data-toggle="modal" data-target="#MyAssignmentsModal" ></i>',
+                      '</a>  '
+                  ].join('');
+              }  
+        window.operateEventsAssignment = {
+
+
+                  'click .assignments': function (e, value, row, index) {
+                    $('.assignmentsDiv').append('<table id="allAssignments" class="table table-bordred table-striped"></table>')
+
+                    $query = "SELECT `employee`.`andrewId`, `assignment`.`landLine` , date_format(`assignment`.`startDate`, '%M %e, %Y') as startDate , date_format(`assignment`.`endDate`, '%M %e, %Y') as endDate FROM `assignment` INNER join `employee` on `employee`.`andrewId`= `assignment`.`andrewId` where `assignment`.`andrewId` ='" + row.andrewId+"';"
+                            connection.query($query, function(err, rows, fields) {
+                              if(err){
+                                  console.log("An error ocurred performing the query.");
+                                  console.log(err);
+                                  return; 
+                              }
+                              console.log(rows)
+                              // console.log(("#landLineReal").val)
+                              $('#allAssignments').bootstrapTable({
+                                  data: rows ,
+                                  height: 532,
+                                  cache: false,
+                                  striped: true,
+                                  pagination: true,
+                                  pageSize: 10,
+                                  pageList: [10,25,50,100,200],
+                                  minimumCountColumns: 2,
+                                  search: true,
+                                  showRefresh:true,
+                                  checkboxEnable: true,
+                                  columns: [{
+                                    field: 'state',
+                                    title: '',
+                                    align: 'center',
+                                    checkbox: true
+                                  }, {
+                                      field: 'landLine',
+                                      title: 'landLine',
+                                      sortable: true
+                                  }, {
+                                      field: 'startDate',
+                                      title: 'startDate',
+                                      sortable: true
+                                  },{
+                                      field: 'endDate',
+                                      title: 'endDate',
+                                      sortable: true
+                                  }, ]
+                              });
+                            });
+                    }
+              }; 
+
+
+</script>

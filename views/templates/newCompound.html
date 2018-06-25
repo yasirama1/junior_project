@@ -1,0 +1,84 @@
+
+    <div id = "page-wrapper">
+      <form class="form-horizontal" action='' method="POST">
+        <fieldset>
+          <div id="legend">
+            <legend class="">New Compound</legend>
+          </div>
+          <div class="control-group">
+            <label class="control-label"  for="UN">Compound Name</label>
+            <div class="controls">
+              <input id = "compoundName" type="text" placeholder="compound" class="input-xlarge">
+            </div>
+          </div>
+         
+          <div class="control-group">
+            <!-- Button -->
+            <div class="controls"><br>
+              <a href="#" class="btn btn-primary btn-md" onclick = "addCompound()" >Add</a>
+            </div>
+          </div>
+        </fieldset>
+      </form>
+
+
+    </div>
+
+  <script type="text/javascript">
+
+
+        var $     = require( 'jquery' );
+        var mysql = require('mysql');
+        // var bcrypt = require('bcrypt');
+
+
+        var connection = mysql.createConnection({
+            host     : 'mysql.qatar.cmu.local',
+            user     : 'fmbills_user',
+            password : 'F@mB11lsU$er', // or the original password : 'apaswword'
+            database : 'fmbills',
+            insecureAuth: true
+        });
+
+        // connect to mysql
+        connection.connect(function(err) {
+            // in case of error
+            if(err){
+                console.log(err.code);
+                console.log(err.fatal);
+            }
+        });
+
+
+        // var app = angular.module('myApp', []);
+
+
+        function endConnection() {
+          connection.end();
+        }
+
+        function addCompound(){
+        var compoundName = document.getElementById("compoundName").value 
+        //THE COMP ID IS NOT INCREMENTAL???????
+
+        if(compoundName == null || compoundName == "" ){
+          alert("Compound Name is required!!", "Bill Management System");
+          return;
+        }
+        
+         $query = "INSERT INTO `compound` (`compName`) VALUES ('" + compoundName + "');";
+
+         connection.query($query, function(err, rows, fields) {
+             if(err){
+                 console.log("An error ocurred performing the query.");
+                 alert(err);
+                 return;
+             }
+             alert("Compound Succesfully Added!")
+             goNewHouse();
+         });
+        }
+
+
+
+</script>

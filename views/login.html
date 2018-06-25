@@ -1,0 +1,155 @@
+<html>
+  <head>
+    <title>Bill Management system</title>
+    <meta charset="UTF-8">
+    <link href="https://maxcdn.bootstrapcdn.com/font-awesome/4.2.0/css/font-awesome.min.css" rel="stylesheet">
+     <link rel="stylesheet" type="text/css" href="../css/login.css">
+     <link rel="stylesheet" type="text/css" href="../node_modules/bootstrap/dist/css/bootstrap.css">
+  </head>
+  <body>
+    <!--
+    you can substitue the span of reauth email for a input with the email and
+    include the remember me checkbox
+    -->
+    <div class="container">
+        <div class="card card-container">
+            <!-- <img class="profile-img-card" src="//lh3.googleusercontent.com/-6V8xOA6M7BA/AAAAAAAAAAI/AAAAAAAAAAA/rzlHcD0KYwo/photo.jpg?sz=120" alt="" /> -->
+            <img id="profile-img" class="profile-img-card" src="../imgs/cmuq_red.jpg" />
+            <p id="profile-name" class="profile-name-card"></p>
+            <form class="form-signin">
+                <span id="reauth-email" class="reauth-email"></span>
+                <input type="email" id="userName" class="form-control" placeholder="Username" required autofocus>
+                <input type="password" id="userPassword" class="form-control" placeholder="Password" required>
+        
+                <button class="btn btn-lg btn-primary btn-block btn-signin" type="submit" onclick = "validateForm()">Log in</button>
+            </form><!-- /form -->
+            <a onclick = "openWin()" class="forgot-password">Change the password?</a>
+        </div><!-- /card-container -->
+    </div><!-- /container -->
+
+  </body>
+
+
+  <script>
+
+    const remote = require('electron').remote;
+    const url = require('url');
+    const path = require('path')
+
+    function openWin(){
+
+      const BrowserWindow = remote.BrowserWindow;
+
+      forgotPass = new BrowserWindow({width: 650, height: 650, maximizable: false, alwaysOnTop: true});
+      forgotPass.loadURL(url.format({
+        pathname: path.join(__dirname, './forgotPassword.html'),
+        protocol: 'file:',
+        slashes: true
+      }));
+    }
+
+    var $ = require('jquery')
+    // You can also require other files to run in this process
+    // require('../renderer.js')
+    // $(document).ready(function(){
+      $("#userName").focus()
+    // });
+    var bcrypt = require('bcrypt-nodejs');
+    var mysql = require('mysql');
+    var connection = mysql.createConnection({
+            host     : 'mysql.qatar.cmu.local',
+            user     : 'fmbills_user',
+            password : 'F@mB11lsU$er', // or the original password : 'apaswword'
+            database : 'fmbills',
+            insecureAuth: true
+    });
+
+    // connect to mysql
+    connection.connect(function(err) {
+      // in case of error
+      if(err){
+          console.log(err.code);
+          console.log(err.fatal);
+      }
+    });
+
+    $query = "SELECT `housing`.`landLine` FROM `assignment`, `housing` where `assignment`.`landLine` = `housing`.`landLine` AND DATEDIFF(`assignment`.`endDate`,CURDATE()) = 0;";
+
+
+    connection.query($query, function(err, rows, fields) {
+      if(err){
+          console.log("An error ocurred performing the query.");
+          console.log(err);
+          return; 
+      }
+
+      for (i = 0;i<rows.length; i++){
+        $query = "UPDATE `housing` SET `vacant` = 1 WHERE `landLine` = "+rows[i].landLine
+        connection.query($query, function(err, rows, fields) {
+          if(err){
+              console.log("An error ocurred performing the query.");
+              console.log(err);
+              return; 
+          }
+
+          console.log("Succesfully set vacant!")
+        });
+      }
+    });
+
+
+
+
+
+
+
+
+    function validateForm () {
+
+
+        var user = document.getElementById("userName").value
+        var pass = document.getElementById("userPassword").value
+        if (user == "" || pass == "") {
+          // alert("Username and Password must be filled out");
+          if(typeof require !== 'undefined') XLSX = require('xlsx');
+          // var workbook = XLSX.readFile('test.xlsx');
+          // for (i =0; i<workbook.Strings.length; i++){
+          //   console.log(workbook.Strings[i].t);
+          // }
+          alert("No Username or Password entered!", "Bill Management System")
+          
+            // return false;
+        }
+        else {
+          
+          
+          $query = 'SELECT `passwordDigest` FROM `user` WHERE `userName` = '+"'"+user+"'"
+          connection.query($query, function(err, rows, fields) {
+
+              if(err){
+                  console.log("An error ocurred performing the query.");
+                  console.log(err);
+                  return;
+              }
+
+              if (rows.length == 0){
+                alert("Username does not exist", "Bill Management System");
+              }
+              else {
+                var hash = bcrypt.hashSync(pass);
+                // console.log(bcrypt.compareSync(pass,rows[0].password_digest))
+                console.log(bcrypt.compareSync(pass,rows[0].passwordDigest))
+                if (bcrypt.compareSync(pass,rows[0].passwordDigest)){
+                  window.location.assign("Homepage.html");
+                  
+                }
+                else{
+                  alert("Wrong Password!", "Bill Management System");
+                }
+              }
+          });
+          
+        }
+    }
+  </script>
+</html>

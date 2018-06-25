@@ -1,0 +1,46 @@
+<!-- Latest compiled and minified CSS -->
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <title>Bill Management system</title>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+  <link href="../style/style.css" rel="stylesheet">
+  <script> window.jQuery = window.$ = require('jquery'); </script>s
+  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+  <script src="../node_modules/angular/angular.js"></script>
+  <link rel="stylesheet" href="../node_modules/bootstrap-table/dist/bootstrap-table.css">
+  <script src="../node_modules/bootstrap-table/dist/bootstrap-table.js"></script>
+   <!-- Bootstrap Core CSS -->
+    <!-- <link href="index.css" rel="stylesheet"> -->
+
+<script type="text/javascript">
+    
+    var electron = require('electron')
+    var shell = electron.shell
+    var ipc = electron.ipcRenderer
+
+</script>
+</head>
+
+<body>
+<div id="wrapper">
+    <!-- Navigation -->
+    <div class="navigation"></div>
+    <div id = "page-wrapper" class = "container"></div>
+</div>
+
+<script> 
+    $(document).ready(function(){
+      $('.navigation').load("navbar.html");
+    });
+    $(document).ready(function(){
+      $('.container').load("templates/home.html");
+    });
+</script>
+<script src = "../renderer.js"></script>
+     
+</body>
+</html>

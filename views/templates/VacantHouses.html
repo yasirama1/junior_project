@@ -1,0 +1,425 @@
+
+    <div id = "page-wrapper">
+      <div class="control-group employeeAll">
+      <!-- Button -->
+
+    </div>
+    <div class="col-md-17">
+      <div class="plan">
+          <div class="plan-name">
+            <center>
+            <h2>Vacant Houses</h2>
+            </center>
+          </div>
+          <div class="table-responsive" style="color: #990000;">
+                <table id="vacantHouses" class="table table-bordred table-striped"></table>    
+          </div>  
+        </div>
+        </div>
+
+
+            <div class="modal fade" id="myModal" role="dialog">
+                <div class="modal-dialog">
+                
+                  <!-- Modal content-->
+                  <div class="modal-content">
+                    <div class="modal-body">
+                      
+
+
+                      <div id = "landLineReal" style="display: none;"></div>
+
+
+                      <form class="form-horizontal" action='' method="POST">
+                        <fieldset>
+                          <div id="legend">
+                            <legend class="">Edit House</legend>
+                          </div>
+                          <div class="control-group">
+                            <label class="control-label"  for="FN">Unit Number</label>
+                            <div class="controls">
+                              <input id="housingUnitNo" type="text" placeholder="Unit Number" class="input-xlarge">
+                            </div>
+                          </div>
+                           <div class="control-group">
+                            <label class="control-label"  for="LN">Landline</label>
+                            <div class="controls">
+                              <input id="housingLandLine" type="text" placeholder="Landline" class="input-xlarge">
+                            </div>
+                          </div>
+                       
+                          <div class="control-group">
+                            <label class="control-label" >Compound Name</label>
+                                  <div class = "Select">
+                                    <select id="housingCompName">
+                                    </select>
+                                 </div>
+                          </div>
+                       <br>
+                          <div class="control-group">
+                            <!-- Button -->
+                            <div>
+                              <a href="#" class="btn btn-primary btn-md" onclick = "updateHousing()" >Update</a>
+                            </div>
+                          </div>
+                        </fieldset>
+                      </form>
+
+
+
+
+
+
+                    </div>
+                    <div class="modal-footer">
+                      <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+                    </div>
+                  </div>
+                  
+                </div>
+              </div>
+
+
+
+
+
+
+            <div class="modal fade" id="newAssignment" role="dialog">
+                <div class="modal-dialog">
+                
+                  <!-- Modal content-->
+                  <div class="modal-content">
+                    <div class="modal-body">
+                      
+
+
+
+
+                          <form class="form-horizontal" action='' method="POST">
+                      <fieldset>
+                        <div id="legend">
+                          <legend class="">New House Assignment</legend>
+                        </div>
+
+                        <div class="control-group">
+                          <label class="control-label"  for="UN">Employee Andrew ID</label>
+                          <div id = "Select">
+                            <select id="assignmentAndrewId">
+                            </select>
+                         </div>
+
+                        </div>
+
+                           <div class="control-group">
+                            <label class="control-label"  for="LN">Landline</label>
+                            <div class="controls">
+                              <input id="assignmentLandlineNo" type="text" placeholder="Landline" class="input-xlarge" disabled>
+                            </div>
+                          </div>
+
+                     
+                        <div class="control-group">
+                          <label class="control-label">Start Date</label>
+                          <div class="controls">
+                            <input id = "assignmentStartDate" type="date" placeholder="" class="input-xlarge">
+                          </div>
+                        </div>
+                      <div class="control-group">
+                          <label class="control-label">End Date</label>
+                          <div class="controls">
+                            <input id = "assignmentEndDate" type="date" placeholder="" class="input-xlarge">
+                          </div>
+                        </div>
+                        <div class="control-group">
+                          <!-- Button -->
+                          <div class="controls"><br>
+                            <a href="#" class="btn btn-primary btn-md"  onclick = "addAssignment()" >Add</a>
+                          </div>
+                        </div>
+                      </fieldset>
+                    </form>
+
+
+
+
+
+
+
+                    </div>
+                    <div class="modal-footer">
+                      <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+                    </div>
+                  </div>
+                  
+                </div>
+              </div>
+
+
+
+
+<script type="text/javascript">
+
+
+        require('../renderer.js');
+
+        var $     = require( 'jquery' ); 
+        var mysql = require('mysql');
+        // var bcrypt = require('bcrypt');
+
+
+        var connection = mysql.createConnection({
+            host     : 'mysql.qatar.cmu.local',
+            user     : 'fmbills_user',
+            password : 'F@mB11lsU$er', // or the original password : 'apaswword'
+            database : 'fmbills',
+            insecureAuth: true
+        });
+
+        // connect to mysql
+        connection.connect(function(err) {
+            // in case of error
+            if(err){
+                console.log(err.code);
+                console.log(err.fatal);
+            }
+        });
+
+
+
+
+        // var app = angular.module('myApp', []);
+
+
+        function endConnection() {
+          connection.end();
+        }
+
+
+        $query = "SELECT `housing`.`unitNo`, `housing`.`landLine`, `compound`.`compName`, `compound`.`compId` FROM `housing`, `compound` where `housing`.`compId` =  `compound`.`compId` AND `vacant` = 1";
+
+        connection.query($query, function(err, rows, fields) {
+          if(err){
+              console.log("An error ocurred performing the query.");
+              console.log(err);
+              return; 
+          }
+          console.log(rows)
+          $('#vacantHouses').bootstrapTable({
+              data: rows ,
+              height: 532,
+              cache: false,
+              striped: true,
+              pagination: true,
+              pageSize: 10,
+              pageList: [10,25,50,100,200],
+              minimumCountColumns: 2,
+              search: true,
+              checkboxEnable: true,
+              columns: [ {
+                  field: 'unitNo',
+                  title: 'Unit Number',
+                  sortable: true,
+              }, {
+                  field: 'landLine',
+                  title: 'Landline Number',
+                  sortable: true
+              }, {
+                  field: 'compName',
+                  title: 'Compound Name',
+                  sortable: true
+              },  {
+                  field: 'operate',
+                  title: 'Edit',
+                  align: 'center',
+                  events: operateEventsVacant,
+                  formatter: operateFormatter
+              },  {
+                  field: 'operateAssign',
+                  title: 'Assign',
+                  align: 'center',
+                  events: operateEventsAssign,
+                  formatter: operateFormatterAssign
+              }, ]
+          });
+        });
+
+
+        function operateFormatter(value, row, index) {
+            return [
+                '<a class="edit" href="javascript:void(0)" title="Edit">',
+                '<i class="glyphicon glyphicon-edit"  data-toggle="modal" data-target="#myModal" ></i>',
+                '</a>  '
+            ].join('');
+        }
+
+        window.operateEventsVacant = {
+            'click .edit': function (e, value, row, index) {
+              $("#housingUnitNo").val(row.unitNo)
+              $("#housingLandLine").val(row.landLine)
+              $("#landLineReal").val(row.landLine)
+              $("div.Select select").val(row.compId);
+            }
+        };
+
+        function updateHousing(){
+
+            var unitNo = document.getElementById("housingUnitNo").value
+            var landLine = document.getElementById("housingLandLine").value
+            var compName = document.getElementById("housingCompName").value
+            var landLineReal = document.getElementById("landLineReal").value
+
+            if (landLine == null || landLine == ""){
+                alert("Landline number is required", "Bill Management System");
+                return;
+            }
+
+            if (compName == null || compName == "" || compName == "Select.."){
+                alert("Compound name is required", "Bill Management System");
+                return;
+            }
+
+            if (unitNo == null || unitNo == ""){
+                alert("Unit number is required", "Bill Management System");
+                return;
+            }
+
+            if (landLine.length > 8 || landLine.length < 8){
+                alert(landLine + " is not a valid landline\nKindly put a number with format 4xxxxxxx", "Bill Management System");
+                return;
+            }
+
+          $query = "UPDATE `housing` SET `unitNo` = '"+  unitNo  +"', `compId` = '"+ compName + "', `landLine` = '"+ landLine + "' WHERE `landLine` = '"+  landLineReal  +"'";
+
+          connection.query($query, function(err, rows, fields) {
+              if(err){
+                  console.log("An error ocurred performing the query.");
+                  console.log(err);
+                  return;
+              }
+              alert("Housing Succesfully Updated!", "Bill Management System");
+              $('#myModal').modal().hide();
+              $(".modal-backdrop").remove();
+              jQuery('body').removeClass('modal-open');
+              goVacantHouses();
+          });
+        }
+
+
+
+        $query = "SELECT * FROM `compound`";
+
+        connection.query($query, function(err, rows, fields) {
+            if(err){
+                console.log("An error ocurred performing the query.");
+                console.log(err);
+                return;
+            }
+          var compIds = rows
+          $.each(rows, function(i, value) {
+              console.log(value.compId)
+              $('#housingCompName').append($('<option value = "'+ value.compId+ '" >'+ value.compName + '</option>'))
+          });
+
+        });
+
+
+
+
+        function operateFormatterAssign(value, row, index) {
+            return [
+                '<a class="assign" href="javascript:void(0)" title="Assign">',
+                '<i class="glyphicon glyphicon-plus"  data-toggle="modal" data-target="#newAssignment" ></i>',
+                '</a>  '
+            ].join('');
+        }
+
+        window.operateEventsAssign = {
+            'click .assign': function (e, value, row, index) {
+              $("#assignmentLandlineNo").val(row.landLine)
+            }
+        };
+
+       $query = "SELECT DISTINCT `employee`.`andrewId`, `employee`.`firstName`, `employee`.`lastName`, `employee`.`email` , `employee`.`contractType` FROM `employee` LEFT JOIN `assignment` on `employee`.`andrewId` = `assignment`.`andrewId` WHERE `assignment`.`andrewId` is  null OR DATEDIFF(`assignment`.`endDate`,CURDATE()) <= 0;";
+
+        connection.query($query, function(err, rows, fields) {
+            if(err){
+                console.log("An error ocurred performing the query.");
+                console.log(err);
+                return;
+            }
+            console.log(rows)
+          $('#assignmentAndrewId').append($('<option>Select Andrew ID</option>'))
+          $.each(rows, function(i, value) {
+              $('#assignmentAndrewId').append($('<option value = "'+ value.andrewId+ '" >'+ value.andrewId + '</option>'))
+          });
+
+        });
+
+        function addAssignment(){
+            var startDate = document.getElementById("assignmentStartDate").value
+            var endDate = document.getElementById("assignmentEndDate").value
+            var andrewId = document.getElementById("assignmentAndrewId").value
+            var landLine = document.getElementById("assignmentLandlineNo").value
+
+
+            if(andrewId == null || andrewId == "" || andrewId == "Select Andrew ID"){
+              alert("Andrew ID is required!!", "Bill Management System");
+              return;
+            }
+
+            if(landLine == null || landLine == "" || landLine == "Select Landline Number"){
+                alert("Landline Number is required!!", "Bill Management System");
+                return;
+            }
+
+            if (startDate == "" || startDate == null) {
+                alert("Start Date is required!!", "Bill Management System");
+                return;
+            }
+
+            if (endDate != null && endDate != ""){
+                if (endDate <= startDate){
+                    alert("End date cannot be before or on the Start Date.", "Bill Management System");
+                    return;
+                }
+            }
+
+
+
+         $query = "INSERT INTO `assignment` (startDate, endDate, andrewId, landLine) VALUES ('"+ startDate +"', '"+ endDate +"', '"+ andrewId+"', '"+ landLine+"');";
+         console.log($query)
+         connection.query($query, function(err, rows, fields) {
+             if(err){
+                 console.log("An error ocurred performing the query.");
+                 alert(err);
+                 return;
+             }
+             var d1 = new Date();
+             var d2 = new Date(endDate);
+             console.log(DateDiff.inDays(d1, d2) + ": Date difference")
+             if (DateDiff.inDays(d1, d2) > 0){
+                 $query = "UPDATE `housing` SET `vacant` = 0 WHERE `landLine` = '" + landLine+"';"
+                 connection.query($query, function(err, rows, fields) {
+                     if(err){
+                         console.log("An error ocurred performing the query.");
+                         alert(err, "Bill Management System");
+                         return;
+                     }           
+                     alert("Assignment Succesfully Added!", "Bill Management System");
+                     $('#newAssignment').modal().hide();
+                     $(".modal-backdrop").remove();
+                     jQuery('body').removeClass('modal-open');
+                     goVacantHouses();
+                     return;
+                 });
+             }  
+             alert("Assignment Succesfully Added!", "Bill Management System");
+             $('#newAssignment').modal().hide();
+             $(".modal-backdrop").remove();
+             jQuery('body').removeClass('modal-open');
+             goVacantHouses();
+             return;
+         });
+        }
+
+</script>

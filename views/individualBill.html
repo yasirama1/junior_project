@@ -1,0 +1,92 @@
+<!-- Latest compiled and minified CSS -->
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <title>Bill Management system</title>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+  <link href="../style/style.css" rel="stylesheet">
+  <script> window.jQuery = window.$ = require('jquery'); </script>
+  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+   <!-- Bootstrap Core CSS -->
+    <!-- <link href="index.css" rel="stylesheet"> -->
+
+<script type="text/javascript">
+    
+    var electron = require('electron')
+    var shell = electron.shell
+    var ipc = electron.ipcRenderer
+
+</script>
+</head>
+
+<body>
+<div id="wrapper">
+    <!-- Navigation -->
+    <div class="navigation"></div>
+    <div id = "page-wrapper">
+      <div class="col-md-11">
+      <div class="plan">
+          <div class="plan-name">
+            <h2>Batoul Hasnah's Bills</h2>
+            <span><h3>Amount Due: 1,010 QR</h3></span>
+          </div>
+          <table id="mytable" class="table table-bordred table-striped">
+                  <thead>
+                       <th>LandLine</th>
+                       <th>Bill Number</th>
+                       <th>Amount due</th>
+                       <th>Month</th>
+                       <th>Year</th>
+                       <th>Pdf</th>
+                     </thead>
+                    <tbody>
+                      <tr>
+                      <td><a>12345678</a></td>
+                      <td>17R-067</td>
+                      <td>1,010</td>
+                      <td>April</td>
+                      <td>2017</td>
+                      <td><a>download</a></td>
+                    </tr>
+                    <tr>
+                      <td><a>12345678</a></td>
+                      <td>18R-0007</td>
+                      <td>0</td>
+                      <td>March</td>
+                      <td>2017</td>
+                      <td><a>download</a></td>
+                    </tr>
+                     <tr>
+                      <td><a>12345678</a></td>
+                      <td>1888R-097</td>
+                      <td>0</td>
+                      <td>Feb</td>
+                      <td>2017</td>
+                      <td><a>download</a></td>
+                    </tr>
+                    </tbody>
+              </table>    
+        </div>
+    </div>
+    </div>
+</div>
+
+
+<script>
+    $(document).ready(function(){
+      $('.navigation').load("navbar.html");
+    });
+</script>
+     
+</body>
+</html>
+
+
+<!-- jQuery library -->
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+
+<!-- Latest compiled JavaScript -->
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>

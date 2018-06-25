@@ -1,0 +1,71 @@
+<nav class="navbar navbar-fixed-top" role="navigation">
+        <!-- Top Menu Items -->
+        <a class="navbar-brand" href="Homepage.html">
+                <img src="../imgs/wordmark.gif" alt="LOGO">
+        </a>
+
+        <ul class="nav navbar-right top-nav">        
+            <li>
+                <a href="login.html"><i class="fa fa-sign-out" aria-hidden="true"></i>LOGOUT</a>
+            </li>
+        </ul>
+        <ul class="nav navbar-nav side-nav">
+                <li id="label"> Bill <br> Management <br> System</li>
+               <hr class="hr">
+                <li>
+                    <a  id="Headlinks"><i class="fa fa-user"></i> EMPLOYEES</a>
+                </li>
+                <hr style="margin-top: 60px; border-width:0.5px;">
+                <li>
+                    <a onclick = "goEmployeeMain()" id="sublinks"  role = "button">All Employees</a>
+                </li>
+                <li>
+                    <a onclick = "goActiveEmployee()" id="sublinks"  role = "button">Active Employees</a>
+                </li>
+                <li>
+                    <a onclick = "goInactiveEmployee()" id="sublinks"  role = "button">Inactive Employees</a>
+                </li>
+                <li>
+                    <a id="Headlinks" ><i class="fa fa-home"></i>HOMES</a>
+                </li>
+                <hr style="margin-top: 161px; border-width:0.5px;">
+                <li>
+                    <a onclick = "goLandlineMain()" id="sublinks"  role = "button">All Houses</a>
+                </li>
+                <li>
+                    <a onclick = "goOccupidHouses()" id="sublinks" role = "button">Occupied Houses</a>
+                </li>
+                <li>
+                    <a onclick = "goVacantHouses()" id="sublinks" role = "button">Vacant Houses</a>
+                </li>
+                <br>
+                <br>
+                <br>
+                <br>
+                <br><br>
+                <li>
+                    <a id="Headlinks"> <i class="fa fa-money"></i>BILLS</a>
+                </li>
+                <hr style="margin-top: 40px;border-width:0.5px;">
+                                <li>
+                    <a onclick = "goOutstanding()" id="sublinks" role = "button">Outstanding Payments</a>
+                </li>
+                <li>
+                    <a onclick = "goAllBills()" id="sublinks" role = "button">Monthly Bills</a>
+                </li>
+
+      
+        </ul> 
+    </nav>
+
+    <div id="page-wrapper-bills">
+        <nav>
+            <div id="topnav">
+                <ul>
+                    <li class="first"><a onclick = "goHome()" role = "button">Home</a></li>
+                    <li class="master"><a onclick = "goMasterSheet()" role = "button">Master Sheet</a></li>
+                    <li><a onclick = "goDevPage()" role = "button">Developer page</a></li>
+                </ul>
+            </div>
+        </nav>     
+    </div>

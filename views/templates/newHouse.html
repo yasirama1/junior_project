@@ -1,0 +1,87 @@
+    <div class="navigation"></div>
+    <div id = "page-wrapper">
+      <form class="form-horizontal" action='' method="POST">
+  <fieldset>
+    <div id="legend">
+      <legend class="">House</legend>
+    </div>
+    <div class="control-group">
+      <label class="control-label"  for="UN">Unit Number</label>
+      <div class="controls">
+        <input id = "houseUnitId" type="text" placeholder="Unit Number" class="input-xlarge">
+      </div>
+    </div>
+     <div class="control-group">
+      <label class="control-label" for="textinput">Select Compound</label>
+      <div id = "Select">
+        <select id="houseCompId">
+        </select>
+     </div>
+     <br>
+     <a href="#" class="btn btn-primary btn-md" onclick = "goNewCompound()" >Add Compound</a>
+    </div>
+
+     <div class="control-group">
+      <label class="control-label">Landline Number</label>
+      <div class="controls">
+        <input id = "houseLandline" type="text" placeholder="Landline Number" class="input-xlarge">
+      </div>
+    </div>
+ 
+   
+    <div class="control-group">
+      <!-- Button -->
+      <div class="controls"><br>
+        <a href="#" class="btn btn-primary btn-md" onclick = "addHouse()" >Add</a>
+      </div>
+    </div>
+  </fieldset>
+</form>
+
+</table>
+
+
+      </fieldset>
+
+    </div>
+
+<script type="text/javascript">
+
+    require('../renderer.js');
+  
+    var connection = mysql.createConnection({
+            host     : 'mysql.qatar.cmu.local',
+            user     : 'fmbills_user',
+            password : 'F@mB11lsU$er', // or the original password : 'apaswword'
+            database : 'fmbills',
+            insecureAuth: true
+    });
+
+    // connect to mysql
+    connection.connect(function(err) {
+        // in case of error
+        if(err){
+            console.log(err.code);
+            console.log(err.fatal);
+        }
+    });
+
+    $query = "SELECT * FROM `compound`";
+
+    connection.query($query, function(err, rows, fields) {
+        if(err){
+            console.log("An error ocurred performing the query.");
+            console.log(err);
+            return;
+        }
+      var compIds = rows
+      $('#houseCompId').append($('<option>Select..</option>'));
+      $.each(rows, function(i, value) {
+          console.log(value.compId)
+          $('#houseCompId').append($('<option id = "'+value.compId+' " + value = "'+ value.compId+ '" >'+ value.compName + '</option>'))
+      });
+
+    });
+
+
+</script>

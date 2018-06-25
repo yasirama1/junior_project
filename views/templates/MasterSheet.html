@@ -1,0 +1,125 @@
+
+    <div id = "page-wrapper">
+      <div class="control-group">
+      <!-- Button -->
+
+    </div>
+    <div class="col-md-17">
+      <div class="plan">
+          <div class="plan-name">
+            <center>
+            <h2>Master sheet</h2>
+            </center>
+          </div>
+          <div class="table-responsive" style="color: #990000;">
+                <table id="mytableCheck" class="table table-bordred table-striped"></table>    
+          </div>  
+        </div>
+        </div>
+
+
+
+
+
+
+
+
+<script type="text/javascript">
+
+
+        require('../renderer.js');
+
+        var $     = require( 'jquery' ); 
+        var mysql = require('mysql');
+        // var bcrypt = require('bcrypt');
+
+
+        var connection = mysql.createConnection({
+            host     : 'mysql.qatar.cmu.local',
+            user     : 'fmbills_user',
+            password : 'F@mB11lsU$er', // or the original password : 'apaswword'
+            database : 'fmbills',
+            insecureAuth: true
+        });
+
+        // connect to mysql
+        connection.connect(function(err) {
+            // in case of error
+            if(err){
+                console.log(err.code);
+                console.log(err.fatal);
+            }
+        });
+
+
+
+
+        // var app = angular.module('myApp', []);
+
+
+        function endConnection() {
+          connection.end();
+        }
+$query = "SELECT `housing`.`unitNo` , `housing`.`landLine`, `compound`.`compName`, `assignment`.`andrewId` ,`employee`.`contractType`, date_format(`assignment`.`startDate`, '%M %e, %Y') as startDate , date_format(`assignment`.`endDate`, '%M %e, %Y') as endDate, CONCAT_WS(' ', `employee`.`firstName`, `employee`.`lastName`) as empName FROM `compound` INNER JOIN `housing` ON `housing`.`compId` = `compound`.`compId`  LEFT JOIN `assignment` ON `housing`.`landLine`= `assignment`.`landLine` AND (DATEDIFF(`assignment`.`endDate`,CURDATE()) > 0 OR (`assignment`.`endDate` = '0000-00-00')) LEFT JOIN `employee` ON `employee`.`andrewId`=`assignment`.`andrewId` ;";
+        connection.query($query, function(err, rows, fields) {
+          if(err){
+              console.log("An error ocurred performing the query.");
+              console.log(err);
+              return; 
+          }
+          console.log(rows)
+          $('#mytableCheck').bootstrapTable({
+              data: rows ,
+              height: 530,
+              cache: false,
+              striped: true,
+              pagination: true,
+              pageSize: 10,
+              pageList: [10,25,50,100,200],
+              minimumCountColumns: 2,
+              search: true,
+              checkboxEnable: true,
+              columns: [{
+                field: 'state',
+                title: '',
+                align: 'center',
+                checkbox: true
+              },{
+                  field: 'compName',
+                  title: 'Compound',
+                  sortable: true,
+              },{
+                  field: 'unitNo',
+                  title: 'unitNo',
+                  sortable: true
+              }, {
+                  field: 'landLine',
+                  title: 'landLine',
+                  sortable: true,
+              }, 
+              {
+                  field: 'empName',
+                  title: 'employee',
+                  sortable: true,
+              },    
+               {
+                  field: 'contractType',
+                  title: 'Contract Type',
+                  sortable: true,
+              }, 
+              {
+                  field: 'startDate',
+                  title: 'startDate',
+                  sortable: true,
+              },
+              {
+                  field: 'endDate',
+                  title: 'endDate',
+                  sortable: true,
+              }, ]
+          });
+        });
+
+
+
+</script>
